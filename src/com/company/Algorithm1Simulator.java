@@ -18,8 +18,8 @@ public class Algorithm1Simulator {
     private double arrival[] = {START, START};
 
     private double hyperexpProbability = 0.2;
-    private double lamda1 = 6.0;
-    private double lamda2 = 6.25;
+    private double lambda1 = 6.0;
+    private double lambda2 = 6.25;
     private double mu1Cloudlet = 0.45;
     private double mu2Cloudlet = 0.27;
     private double mu1Cloud = 0.25;
@@ -33,7 +33,6 @@ public class Algorithm1Simulator {
     private long N = 20;
     private long number = 0;
     private List<Integer> cloudQueue = new ArrayList<>();
-
     private int lastScheduled;
 
     Time t = new Time();
@@ -68,7 +67,7 @@ public class Algorithm1Simulator {
      */
     public double getArrivalType1() {
         rvgs.rngs.selectStream(0);
-        arrival[0] += rvgs.exponential(1/lamda1);
+        arrival[0] += rvgs.exponential(1/ lambda1);
         return arrival[0];
     }
 
@@ -78,7 +77,7 @@ public class Algorithm1Simulator {
      */
     public double getArrivalType2() {
         rvgs.rngs.selectStream(1);
-        arrival[1] += rvgs.exponential(1/lamda2);
+        arrival[1] += rvgs.exponential(1/ lambda2);
         return arrival[1];
     }
 
