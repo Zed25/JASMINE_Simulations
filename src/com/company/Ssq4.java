@@ -1,5 +1,5 @@
 /* ------------------------------------------------------------------------- 
- * This program is a next-event simulation of a single-server FIFO service
+ * This program is a next-job simulation of a single-server FIFO service
  * node using Exponentially distributed interarrival times and Erlang 
  * distributed service times (i.e., a M/E/1 queue).  The service node is 
  * assumed to be initially idle, no arrivals are permitted after the 
@@ -30,7 +30,7 @@ public class Ssq4{
 	double arrival;                /* next arrival time                   */
 	double completion;             /* next completion time                */
 	double current;                /* current time                        */
-	double next;                   /* next (most imminent) event time     */
+	double next;                   /* next (most imminent) job time     */
 	double last;                   /* last arrival time                   */
 
 	public T(){}
@@ -105,9 +105,9 @@ public class Ssq4{
 	t.current    = START;        /* set the clock                         */
 	t.arrival    = getArrival(); /* schedule the first arrival            */
   
-	t.completion = INFINITY;     /* the first event can't be a completion */
+	t.completion = INFINITY;     /* the first job can't be a completion */
 	while ((t.arrival < STOP) || (number > 0)) {
-	    t.next          = min(t.arrival, t.completion); /*next event time */
+	    t.next          = min(t.arrival, t.completion); /*next job time */
 	    if (number > 0)  {                              /*update integrals*/
 			area.node    += (t.next - t.current) * number;
 			area.queue   += (t.next - t.current) * (number - 1);

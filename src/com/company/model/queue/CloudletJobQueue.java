@@ -1,8 +1,8 @@
-package com.company.model.event.pool;
+package com.company.model.queue;
 
-import com.company.model.event.ClassType;
-import com.company.model.event.CloudletJob;
-import com.company.model.event.Job;
+import com.company.model.job.ClassType;
+import com.company.model.job.CloudletJob;
+import com.company.model.job.Job;
 
 public class CloudletJobQueue implements JobQueue {
     private CloudletJob[] cloudletJobs;
@@ -24,7 +24,19 @@ public class CloudletJobQueue implements JobQueue {
                     this.cloudletJobs[0] = (CloudletJob) job;
                 } else {
                     for (int i = this.cloudletJobs.length - 1; i >= 0; i--) {
-                        switch (this.cloudletJobs[i].getClassType()) {
+                        if (this.cloudletJobs[i].getClassType() == ClassType.NONE) {
+                            continue;
+                        } else if (this.cloudletJobs[i].getClassType() == ClassType.CLASS1) {
+                            this.cloudletJobs[i + 1] = (CloudletJob) job;
+                            break;
+                        } else {
+                            if (this.cloudletJobs[i].getScheduledTime() > 0.0) { //class 2 job already in service
+                                this.cloudletJobs[i + 1] = (CloudletJob) job;
+                            } else {
+                                this.cloudletJobs[i + 1] = this.cloudletJobs[i];
+                            }
+                        }
+                        /*switch (this.cloudletJobs[i].getClassType()) {
                             case NONE:
                                 continue;
                             case CLASS1:
@@ -36,9 +48,10 @@ public class CloudletJobQueue implements JobQueue {
                                 } else {
                                     this.cloudletJobs[i + 1] = this.cloudletJobs[i];
                                 }
-                        }
+                        }*/
                     }
                 }
+                this.lastJobIndex++;
             } else {
                 this.cloudletJobs[this.lastJobIndex + 1] = (CloudletJob) job;
                 this.lastJobIndex++;
@@ -49,7 +62,7 @@ public class CloudletJobQueue implements JobQueue {
     @Override
     public Job popJob() {
         if (this.lastJobIndex > -1) {
-            CloudletJob event = this.cloudletJobs[0];
+            CloudletJob job = this.cloudletJobs[0];
             for (int i = 0; i < this.lastJobIndex; i++) {
                 this.cloudletJobs[i] = this.cloudletJobs[i + 1];
             }
@@ -57,7 +70,7 @@ public class CloudletJobQueue implements JobQueue {
                 this.cloudletJobs[j] = new CloudletJob();
             }
             this.lastJobIndex--;
-            return event;
+            return job;
         } else {
             return  null;
         }

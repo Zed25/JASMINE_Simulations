@@ -1,11 +1,11 @@
 package com.company;
 
 import com.company.model.Time;
-import com.company.model.event.ClassType;
-import com.company.model.event.CloudJob;
-import com.company.model.event.CloudletJob;
-import com.company.model.event.Job;
-import com.company.model.system.Node;
+import com.company.model.job.ClassType;
+import com.company.model.job.CloudJob;
+import com.company.model.job.CloudletJob;
+import com.company.model.job.Job;
+import com.company.model.node.Node;
 
 import java.text.DecimalFormat;
 
@@ -15,7 +15,7 @@ public class Algorithm1Simulator {
 
     /* SIMULATION TIME INPUT VARIABLES */
     private final double START = 0.0;               /*initial time                   */
-    private final double STOP = 20000.0;            /* terminal (close the door) time */
+    private final double STOP = 200000.0;            /* terminal (close the door) time */
     private final double INFINITY = (100.0 * STOP); /*must be much larger than STOP  */
 
     /* SIMULATION SYSTEM INPUT VARIABLES */
@@ -124,12 +124,12 @@ public class Algorithm1Simulator {
 
     private void simulate() {
 
-        rvgs.rngs.plantSeeds(initialSeed);
+        rvgs.rngs.plantSeeds(initialSeed); /* put initial seed */
         t.setCurrent(START);         /* set the clock                         */
         t.setArrival(new double[]{getArrivalType1(START), getArrivalType2(START)}); /* schedule the first arrival            */
-        t.setLast(new double[]{INFINITY, INFINITY});
-        t.setCloudletDeparture(INFINITY); /* the first event can't be a cloudlet completion */
-        t.setCloudDeparture(INFINITY); /* the first event can't be a cloud completion */
+        t.setLast(new double[]{INFINITY, INFINITY}); /* init last arrivals statistics */
+        t.setCloudletDeparture(INFINITY); /* the first job can't be a cloudlet completion */
+        t.setCloudDeparture(INFINITY); /* the first job can't be a cloud completion */
 
         while (t.getArrival()[0] < STOP || t.getArrival()[1] < STOP || node.getCloudletJobsNumber() > 0 || node.getCloudJodbNumber() > 0) {
             t.setNext(min(
@@ -138,7 +138,7 @@ public class Algorithm1Simulator {
                         t.getCloudletDeparture(),
                         t.getCloudDeparture()
                     )
-            ); /*next event time */
+            ); /*next job time */
             //TODO update statistics
             t.setCurrent(t.getNext());                   /* advance the clock */
 
@@ -156,8 +156,8 @@ public class Algorithm1Simulator {
         DecimalFormat f = new DecimalFormat("###0.00");
 
         System.out.println("toCloud = " + 0 +"\n" +
-                "cloudDeparted = " + node.getCloudletDeparture() + "\n" +
-                "cloudletDeparted = " + node.getCloudDeparture() + "\n" +
+                "cloudDeparted = " + node.getCloudDeparture() + "\n" +
+                "cloudletDeparted = " + node.getCloudletDeparture() + "\n" +
                 "n1 = " + node.getClass1CloudletQueue() + "\n" +
                 "n2 = " + node.getClass2CloudletQueue() + "\n" +
                 "N = " + N + "\n" +
@@ -249,7 +249,19 @@ public class Algorithm1Simulator {
 
     private void processCloudDeparture() {
         node.incrementCloudDeparted();
-        node.getCloudJobQueue().popJob();
+        CloudJob poppedJob = (CloudJob) node.getCloudJobQueue().popJob();
+        if (poppedJob != null) {
+            switch (poppedJob.getClassType()){
+                case CLASS1:
+                    node.decrementClass1CloudQueue();
+                    break;
+                case CLASS2:
+                    node.decrementClass2CloudQueue();
+                    break;
+                case NONE:
+                    break;
+            }
+        }
 
         if (node.getCloudJobQueue().getCloudJobs().size() > 0) {
             CloudJob job = node.getCloudJobQueue().getCloudJobs().get(0); //get first job in queue
@@ -260,9 +272,20 @@ public class Algorithm1Simulator {
     }
 
     private void cloudArrival(int jobType) {
+        ClassType classType;
+        double arrivalTime;
+        if (jobType == 1) {
+            classType = ClassType.CLASS1;
+            arrivalTime = t.getArrival()[0];
+            node.incrementClass1CloudQueue();
+        } else {
+            classType = ClassType.CLASS2;
+            arrivalTime = t.getArrival()[1];
+            node.incrementClass2CloudQueue();
+        }
         CloudJob job = new CloudJob(
-                jobType == 1 ? ClassType.CLASS1 : ClassType.CLASS2,
-                jobType==  1 ? t.getArrival()[0] : t.getArrival()[1],
+                classType,
+                arrivalTime,
                 -1.0);
         node.getCloudJobQueue().putJob(job);
 

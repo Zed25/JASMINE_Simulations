@@ -5,7 +5,7 @@ public class Time {
     private double cloudletDeparture;              /* next cloudletDeparture time */
     private double cloudDeparture;         /* next cloud cloudletDeparture time */
     private double current;                /* current time                        */
-    private double next;                   /* next (most imminent) event time     */
+    private double next;                   /* next (most imminent) job time     */
     private double last[];                 /* last arrival time, 2 entry : last[0] = last type 1 arrival, last[1] = last type 2 arrival*/
 
     public Time(){}

@@ -1,6 +1,6 @@
-package com.company.model.event.pool;
+package com.company.model.queue;
 
-import com.company.model.event.Job;
+import com.company.model.job.Job;
 
 public interface JobQueue {
     void putJob(Job job);

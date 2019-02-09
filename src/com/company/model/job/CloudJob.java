@@ -1,4 +1,4 @@
-package com.company.model.event;
+package com.company.model.job;
 
 public class CloudJob extends Job {
 

@@ -1,12 +1,12 @@
-package com.company.model.event;
+package com.company.model.job;
 
 public abstract class Job {
     protected ClassType classType;    //the job class type (1 or 2)
-    //protected EventType eventType;    //the event type (arrival or departure)
-    protected double arrivalTime;     //When the job arrives in the system
-    protected double scheduledTime;   //When the event is scheduled in next event simulation
-                                    //If it is an arrival event this time would be the same of arrival time
-                                    //If it is a departure event it would be the time which the job leaves the system
+    //protected EventType eventType;    //the job type (arrival or departure)
+    protected double arrivalTime;     //When the job arrives in the node
+    protected double scheduledTime;   //When the job is scheduled in next job simulation
+                                    //If it is an arrival job this time would be the same of arrival time
+                                    //If it is a departure job it would be the time which the job leaves the node
 
     public ClassType getClassType() {
         return classType;

@@ -1,7 +1,7 @@
-package com.company.model.system;
+package com.company.model.node;
 
-import com.company.model.event.pool.CloudJobQueue;
-import com.company.model.event.pool.CloudletJobQueue;
+import com.company.model.queue.CloudJobQueue;
+import com.company.model.queue.CloudletJobQueue;
 
 public class Node {
     private CloudletJobQueue cloudletJobQueue;

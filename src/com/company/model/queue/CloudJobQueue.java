@@ -1,7 +1,7 @@
-package com.company.model.event.pool;
+package com.company.model.queue;
 
-import com.company.model.event.CloudJob;
-import com.company.model.event.Job;
+import com.company.model.job.CloudJob;
+import com.company.model.job.Job;
 
 import java.util.ArrayList;
 import java.util.List;
