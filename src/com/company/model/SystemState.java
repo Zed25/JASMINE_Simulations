@@ -1,13 +1,13 @@
 package com.company.model;
 
-public class MarkovState {
+public class SystemState {
     private long n1Clet;    /* CLASS1 jobs' number in cloudlet */
     private long n2Clet;    /* CLASS2 jobs' number in cloudlet */
     private long n1Cloud;   /* CLASS1 jobs' number in cloud */
     private long n2Cloud;   /* CLASS2 jobs' number in cloud */
 
     /* First markov state (0,0,0,0) */
-    public MarkovState() {
+    public SystemState() {
         this.n1Clet = 0;
         this.n2Clet = 0;
         this.n1Cloud = 0;
@@ -16,7 +16,7 @@ public class MarkovState {
 
     /* check if system is empty */
     public boolean systemIsEmpty(){
-        return n1Clet > 0 || n2Clet > 0 || n1Cloud > 0 || n2Cloud > 0;
+        return n1Clet == 0 && n2Clet == 0 && n1Cloud == 0 && n2Cloud == 0;
     }
 
     /* increment n1 cloudlet state variable */
