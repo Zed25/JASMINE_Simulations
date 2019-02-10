@@ -8,13 +8,15 @@ import com.company.model.event.enumeration.ClassType;
 import com.company.model.event.CloudletEvent;
 import com.company.model.event.enumeration.EventLocation;
 import com.company.model.event.enumeration.EventStatus;
+import com.company.model.statistics.AreaStatistics;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Algorithm1Simulator {
 
-    private final long initialSeeed = 1234567; //TODO delete this
+    private final long initialSeeed = 1; //TODO delete this
 
     private final double START = 0.0;               /* initial (open the door) */
     private final double STOP = 200000.0;           /* terminal (close the door) time */
@@ -39,6 +41,11 @@ public class Algorithm1Simulator {
     private Time t;
 
     private SystemState systemState;                /* system state */
+
+    private long processedN1JobsClet = 0;
+    private long processedN2JobsClet = 0;
+    private long processedN1JobsCloud = 0;
+    private long processedN2JobsCloud = 0;
 
     /** -----------------------------------------------------------------
      * generate the next arrival value, it must be added to current time
@@ -125,6 +132,8 @@ public class Algorithm1Simulator {
         this.rvgs = new Rvgs(rngs);             /* init random variable generators */
         this.t = new Time();                    /* init time */
 
+        AreaStatistics areaStatistics = new AreaStatistics(); /* init area statistics */
+
         rngs.plantSeeds(initialSeeed);          /* plan seeds */
 
         /* init cloudlet event list, cloudEvents[0] <- new arrival, other entries ar node servers */
@@ -156,11 +165,14 @@ public class Algorithm1Simulator {
                 t.setNext(cloudEvents.get(nextEventInfo.getIndex()).getNextEventTime());
             }
             //TODO compute statistics
-            System.out.println("-------------------------------------------------------------");
+            if (systemState.getCloudletJobsNumber() + systemState.getCloudJobsNumber() > 0) {
+                areaStatistics.updateStatistics(systemState, t); /* update area statistics */
+            }
+            /*System.out.println("-------------------------------------------------------------");
             System.out.println("\t\t\t\t\t\tSystem State");
             System.out.println("-------------------------------------------------------------");
             System.out.println("\t\t N1 Cloudlet = " + systemState.getN1Clet() + "\t\t\t N1 Cloud = " + systemState.getN1Cloud());
-            System.out.println("\t\t N2 Cloudlet = " + systemState.getN2Clet() + "\t\t\t N2 Cloud = " + systemState.getN2Cloud());
+            System.out.println("\t\t N2 Cloudlet = " + systemState.getN2Clet() + "\t\t\t N2 Cloud = " + systemState.getN2Cloud());*/
 
 
             t.setCurrent(t.getNext());                      /* advance the clock to next event*/
@@ -178,11 +190,50 @@ public class Algorithm1Simulator {
         }
 
         //TODO print statistics
+
+        DecimalFormat decimalFourZero = new DecimalFormat("###0.0000");
+
         System.out.println("-------------------------------------------------------------");
         System.out.println("\t\t\t\t\t\tSystem State");
         System.out.println("-------------------------------------------------------------");
         System.out.println("\t\t N1 Cloudlet = " + systemState.getN1Clet() + "\t\t\t N1 Cloud = " + systemState.getN1Cloud());
         System.out.println("\t\t N2 Cloudlet = " + systemState.getN2Clet() + "\t\t\t N2 Cloud = " + systemState.getN2Cloud());
+
+        /* -------------------------------------------------
+         * PRINT AREA STATISTICS
+         * -------------------------------------------------
+         * */
+        System.out.println("\n-------------------------------------------------------------");
+        System.out.println("\t\t\t\t\t\tArea Statistics");
+        System.out.println("-------------------------------------------------------------\n");
+        System.out.println("\nfor " + (this.processedN1JobsClet + this.processedN2JobsClet + processedN1JobsCloud + processedN2JobsCloud) + " jobs the service node statistics are:\n");
+        System.out.println("\n-------------------------------------------------------------");
+        System.out.println("\t\t\t\t\t\tSystem Area Statistics");
+        System.out.println("-------------------------------------------------------------\n");
+        System.out.println("  avg # in node ................. =   " + decimalFourZero.format(areaStatistics.getSystemArea() / t.getCurrent()));
+        System.out.println("  avg interarrivals ............. =   " + decimalFourZero.format(cloudletEvents[0].getNextEventTime() / (this.processedN1JobsClet + this.processedN2JobsClet + this.processedN1JobsCloud + this.processedN2JobsCloud)));
+        System.out.println("  avg wait ...................... =   " + decimalFourZero.format(areaStatistics.getSystemArea() / (this.processedN1JobsClet + this.processedN2JobsClet + this.processedN1JobsCloud + this.processedN2JobsCloud)));
+
+        System.out.println("\n-------------------------------------------------------------");
+        System.out.println("\t\t\t\t\t\tCloudlet Area Statistics");
+        System.out.println("-------------------------------------------------------------\n");
+        System.out.println("  avg # in cloudlet ............. =   " + decimalFourZero.format(areaStatistics.getCloudletArea() / t.getCurrent()));
+        System.out.println("  avg wait ...................... =   " + decimalFourZero.format(areaStatistics.getCloudletArea() / (this.processedN1JobsClet + this.processedN2JobsClet)));
+        System.out.println("  avg type 1 # in cloudlet ...... =   " + decimalFourZero.format(areaStatistics.getN1CletArea() / t.getCurrent()));
+        System.out.println("  avg type 1 wait ............... =   " + decimalFourZero.format(areaStatistics.getN1CletArea() / this.processedN1JobsClet));
+        System.out.println("  avg type 2 # in cloudlet ...... =   " + decimalFourZero.format(areaStatistics.getN2CletArea() / t.getCurrent()));
+        System.out.println("  avg type 2 wait ............... =   " + decimalFourZero.format(areaStatistics.getN2CletArea() / this.processedN1JobsClet));
+
+        System.out.println("\n-------------------------------------------------------------");
+        System.out.println("\t\t\t\t\t\tCloud Area Statistics");
+        System.out.println("-------------------------------------------------------------\n");
+        System.out.println("  avg # in cloud ................ =   " + decimalFourZero.format(areaStatistics.getCloudArea() / t.getCurrent()));
+        System.out.println("  avg wait ...................... =   " + decimalFourZero.format(areaStatistics.getCloudArea() / (this.processedN1JobsCloud + this.processedN2JobsCloud)));
+        System.out.println("  avg type 1 # in cloud ......... =   " + decimalFourZero.format(areaStatistics.getN1CloudArea() / t.getCurrent()));
+        System.out.println("  avg type 1 wait ............... =   " + decimalFourZero.format(areaStatistics.getN1CloudArea() / this.processedN1JobsCloud));
+        System.out.println("  avg type 2 # in cloud ......... =   " + decimalFourZero.format(areaStatistics.getN2CloudArea() / t.getCurrent()));
+        System.out.println("  avg type 2 wait ............... =   " + decimalFourZero.format(areaStatistics.getN2CloudArea() / this.processedN2JobsCloud));
+
     }
 
     /** ----------------------------------------------------------------------------------------------------------------
@@ -255,9 +306,11 @@ public class Algorithm1Simulator {
     private void processCloudletDeparture(int eventIndex, CloudletEvent[] cloudletEvents, SystemState systemState) {
         CloudletEvent event = cloudletEvents[eventIndex];       /* get event to process */
         if (event.getClassType() == ClassType.CLASS1) {         /* process class 1 departure */
-        systemState.decrementN1Clet();                          /* decrement class 1 state */
+            systemState.decrementN1Clet();                      /* decrement class 1 state */
+            this.processedN1JobsClet++;
         } else if (event.getClassType() == ClassType.CLASS2) {  /* process class 2 departure */
             systemState.decrementN2Clet();                      /* decrement class 2 state */
+            this.processedN2JobsClet++;
         }
 
         /* set server idle */
@@ -352,10 +405,12 @@ public class Algorithm1Simulator {
                                                                                            class1 departure */
             systemState.decrementN1Cloud();                                             /* decrement cloud
                                                                                            class1 state */
+            this.processedN1JobsCloud++;
         } else if (cloudEvents.get(eventIndex).getClassType() == ClassType.CLASS2) {    /* process cloud
                                                                                            class2 departure */
             systemState.decrementN2Cloud();                                             /* decrement cloud
                                                                                            class2 state */
+            this.processedN2JobsCloud++;
         }
 
         /* set server idle */
