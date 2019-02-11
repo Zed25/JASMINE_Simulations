@@ -6,4 +6,5 @@ import com.company.model.Time;
 public interface Statistics {
 
     void updateStatistics(SystemState systemState, Time time);
+
 }

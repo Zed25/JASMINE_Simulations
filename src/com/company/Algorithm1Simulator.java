@@ -8,7 +8,7 @@ import com.company.model.event.enumeration.ClassType;
 import com.company.model.event.CloudletEvent;
 import com.company.model.event.enumeration.EventLocation;
 import com.company.model.event.enumeration.EventStatus;
-import com.company.model.statistics.AreaStatistics;
+import com.company.model.statistics.BaseStatistics;
 import com.company.model.statistics.BatchStatistics;
 
 import java.text.DecimalFormat;
@@ -24,7 +24,7 @@ public class Algorithm1Simulator {
     private final double INFINITY = 100*STOP;       /* infinity, much bigger than STOP */
 
     /* INPUT VARIABLES */
-    private final int N = 20;                       /* cloudlet threshold (cloudlet servers number) */
+    private final int N = 2;                       /* cloudlet threshold (cloudlet servers number) */
     private final double lambda1 = 6.0;             /* CLASS1 arrival rate */
     private final double lambda2 = 6.25;            /* CLASS2 arrival rate */
     private final double mu1Cloudlet = 0.45;        /* cloudlet CLASS1 service rate */
@@ -70,17 +70,19 @@ public class Algorithm1Simulator {
      * ------------------------------------------------------------------------------------------------
      */
     public double getServiceCloudlet(ClassType classType) {
+        rvgs.rngs.selectStream(2);
+        double randomVal = rvgs.rngs.random();
         switch (classType){
             case CLASS1:                                    /* get CLASS1 next hyperexponential value */
-                rvgs.rngs.selectStream(2);
-                if (rvgs.rngs.random() <= hyperexpProb) {
+                rvgs.rngs.selectStream(3);
+                if (randomVal <= hyperexpProb) {
                     return rvgs.exponential(1/(2 * hyperexpProb * mu1Cloudlet));
                 } else {
                     return rvgs.exponential(1/(2 * (1-hyperexpProb) * mu1Cloudlet));
                 }
             case CLASS2:                                    /* get CLASS2 next hyperexponential value */
-                rvgs.rngs.selectStream(3);
-                if (rvgs.rngs.random() <= hyperexpProb) {
+                rvgs.rngs.selectStream(4);
+                if (randomVal <= hyperexpProb) {
                     return rvgs.exponential(2* hyperexpProb * mu2Cloudlet);
                 } else {
                     return rvgs.exponential(2 * (1-hyperexpProb) * mu2Cloudlet);
@@ -98,10 +100,10 @@ public class Algorithm1Simulator {
     public double getServiceCloud(ClassType classType) {
         switch (classType) {
             case CLASS1:                                    /* get CLASS1 next exponential value */
-                rvgs.rngs.selectStream(4);
+                rvgs.rngs.selectStream(5);
                 return rvgs.exponential(1/mu1Cloud);
             case CLASS2:                                    /* get CLASS2 next exponential value */
-                rvgs.rngs.selectStream(5);
+                rvgs.rngs.selectStream(6);
                 return rvgs.exponential(1/mu2Cloud);
             default:                                        /* error, return 0.0 */
                 return 0.0;
@@ -134,6 +136,9 @@ public class Algorithm1Simulator {
         this.t = new Time();                    /* init time */
 
         BatchStatistics batchStatistics = new BatchStatistics(); /* init batch statistics */
+
+        BaseStatistics stationaryStatistics = new BaseStatistics(); /* stationary statistics */
+        List<Double> stationaryRespTimeCheck = new ArrayList<>();
 
         rngs.plantSeeds(initialSeeed);          /* plan seeds */
 
@@ -171,6 +176,10 @@ public class Algorithm1Simulator {
             } else {                                    /* update area statistics */
                 batchStatistics.updateStatistics(systemState, t);
             }
+            stationaryStatistics.updateStatistics(systemState, t); /* stationary */
+            if (stationaryStatistics.getProcessedSystemJobsNumber() > 0) {
+                stationaryRespTimeCheck.add(stationaryStatistics.getSystemArea() / stationaryStatistics.getProcessedSystemJobsNumber());
+            }
             eventCounter++;                               /* update job counter */
             /*System.out.println("-------------------------------------------------------------");
             System.out.println("\t\t\t\t\t\tSystem State");
@@ -187,9 +196,9 @@ public class Algorithm1Simulator {
             }
             else if (nextEventInfo.getIndex() != 0
                     && nextEventInfo.getLocation() == EventLocation.CLOUDLET) { /* process cloudlet departure */
-                this.processCloudletDeparture(nextEventInfo.getIndex(), cloudletEvents, systemState, batchStatistics.getLastBatchStatistics());
+                this.processCloudletDeparture(nextEventInfo.getIndex(), cloudletEvents, systemState, batchStatistics.getLastBatchStatistics(), stationaryStatistics);
             } else { /* process cloud departure */
-                this.processCloudDeparture(nextEventInfo.getIndex(), cloudEvents, systemState, batchStatistics.getLastBatchStatistics());
+                this.processCloudDeparture(nextEventInfo.getIndex(), cloudEvents, systemState, batchStatistics.getLastBatchStatistics(), stationaryStatistics);
             }
         }
 
@@ -197,13 +206,13 @@ public class Algorithm1Simulator {
 
         DecimalFormat decimalFourZero = new DecimalFormat("###0.0000");
         for (int i = 0; i < batchStatistics.getBatchMeanStatistics().size(); i++) {
-            AreaStatistics areaStatistics = batchStatistics.getBatchMeanStatistics().get(i);
+            BaseStatistics baseStatistics = batchStatistics.getBatchMeanStatistics().get(i);
             System.out.println("\n-------------------------------------------------------------");
             System.out.println("\t\t\t\t\t\tBatch " + (i + 1) + " Statistics");
             System.out.println("-------------------------------------------------------------\n");
 
-            System.out.println("avg wait .......... = " + decimalFourZero.format(areaStatistics.getSystemArea() /
-                    (areaStatistics.getProcessedN1JobsClet() + areaStatistics.getProcessedN2JobsClet() + areaStatistics.getProcessedN1JobsCloud() + areaStatistics.getProcessedN2JobsCloud())));
+            System.out.println("avg wait .......... = " + decimalFourZero.format(baseStatistics.getSystemArea() /
+                    (baseStatistics.getProcessedN1JobsClet() + baseStatistics.getProcessedN2JobsClet() + baseStatistics.getProcessedN1JobsCloud() + baseStatistics.getProcessedN2JobsCloud())));
         }
         /*DecimalFormat decimalFourZero = new DecimalFormat("###0.0000");
 
@@ -317,14 +326,16 @@ public class Algorithm1Simulator {
      * process cloudlet departure
      * ---------------------------
      */
-    private void processCloudletDeparture(int eventIndex, CloudletEvent[] cloudletEvents, SystemState systemState, AreaStatistics areaStatistics) {
+    private void processCloudletDeparture(int eventIndex, CloudletEvent[] cloudletEvents, SystemState systemState, BaseStatistics baseStatistics, BaseStatistics stationaryStatistics) {
         CloudletEvent event = cloudletEvents[eventIndex];       /* get event to process */
         if (event.getClassType() == ClassType.CLASS1) {         /* process class 1 departure */
             systemState.decrementN1Clet();                      /* decrement class 1 state */
-            areaStatistics.incrementProcJobsN1Clet();
+            baseStatistics.incrementProcJobsN1Clet();
+            stationaryStatistics.incrementProcJobsN1Clet();
         } else if (event.getClassType() == ClassType.CLASS2) {  /* process class 2 departure */
             systemState.decrementN2Clet();                      /* decrement class 2 state */
-            areaStatistics.incrementProcJobsN2Clet();
+            baseStatistics.incrementProcJobsN2Clet();
+            stationaryStatistics.incrementProcJobsN2Clet();
         }
 
         /* set server idle */
@@ -414,17 +425,19 @@ public class Algorithm1Simulator {
      * process cloud departure
      * ------------------------
      */
-    private void processCloudDeparture(int eventIndex, List<CloudEvent> cloudEvents, SystemState systemState, AreaStatistics areaStatistics) {
+    private void processCloudDeparture(int eventIndex, List<CloudEvent> cloudEvents, SystemState systemState, BaseStatistics baseStatistics, BaseStatistics stationaryStatistics) {
         if (cloudEvents.get(eventIndex).getClassType() == ClassType.CLASS1) {           /* process cloud
                                                                                            class1 departure */
             systemState.decrementN1Cloud();                                             /* decrement cloud
                                                                                            class1 state */
-            areaStatistics.incrementProcJobsN1Cloud();
+            baseStatistics.incrementProcJobsN1Cloud();
+            stationaryStatistics.incrementProcJobsN1Cloud();
         } else if (cloudEvents.get(eventIndex).getClassType() == ClassType.CLASS2) {    /* process cloud
                                                                                            class2 departure */
             systemState.decrementN2Cloud();                                             /* decrement cloud
                                                                                            class2 state */
-            areaStatistics.incrementProcJobsN2Cloud();
+            baseStatistics.incrementProcJobsN2Cloud();
+            stationaryStatistics.incrementProcJobsN2Cloud();
         }
 
         /* set server idle */

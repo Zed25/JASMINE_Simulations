@@ -8,16 +8,34 @@ import java.util.List;
 
 public class BatchStatistics implements BatchMeanStatistics {
 
-    private List<AreaStatistics> batchMeanStatistics;
+    private List<BaseStatistics> batchMeanStatistics;
+
+    /* --------------------------- A.3.1 Statistics --------------------------- */
+    private List<Double> systemRespTime;
+    private List<Double> class1RespTime;
+    private List<Double> class2RespTime;
+    private List<Double> globalThr;                             /* system global throughput */
+    private List<Double> class1Thr;                             /* system class 1 throughput */
+    private List<Double> class2Thr;                             /* system class 2 throughput */
+
+    /* --------------------------- A.3.2 Statistics --------------------------- */
+    /* --------------------------- A.3.3 Statistics --------------------------- */
+    /* --------------------------- A.3.4 Statistics --------------------------- */
+    private List<Double> cloudClass1Thr;                        /* cloud class 1 throughput */
+    private List<Double> cloudClass2lThr;                       /* cloud class 2 throughput */
+    private List<Double> cloudletEffectiveClass1Thr;            /* cloudlet effective class 1 throughput */
+    private List<Double> cloudletEffectiveClass2Thr;            /* cloudlet effective class 2 throughput */
+
+    //private List<Double> class1RespTime;
 
     public BatchStatistics() {
         this.batchMeanStatistics = new ArrayList<>();
-        this.batchMeanStatistics.add(new AreaStatistics());
+        this.batchMeanStatistics.add(new BaseStatistics());
     }
 
     @Override
     public void resetBatch() {
-        this.batchMeanStatistics.add(new AreaStatistics());
+        this.batchMeanStatistics.add(new BaseStatistics());
     }
 
     @Override
@@ -26,10 +44,21 @@ public class BatchStatistics implements BatchMeanStatistics {
         this.batchMeanStatistics.get(lastBatchIndex).updateStatistics(systemState,time);
     }
 
-    public List<AreaStatistics> getBatchMeanStatistics() {
+    @Override
+    public void updateBatchStatistics() {
+        int lastBatchIndex = this.batchMeanStatistics.size() - 1;
+        BaseStatistics baseStatistics = this.batchMeanStatistics.get(lastBatchIndex); /* get current batch statistics */
+
+        if (baseStatistics.getCurrentTime() > 0) { /* if batch current time grater than 0,
+                                                      it's possible to compute throughput and population mean */
+
+        }
+    }
+
+    public List<BaseStatistics> getBatchMeanStatistics() {
         return batchMeanStatistics;
     }
-    public AreaStatistics getLastBatchStatistics() {
+    public BaseStatistics getLastBatchStatistics() {
         int lastBatchIndex = this.batchMeanStatistics.size() - 1;
         return this.batchMeanStatistics.get(lastBatchIndex);
     }

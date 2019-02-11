@@ -3,7 +3,8 @@ package com.company.model.statistics;
 import com.company.model.SystemState;
 import com.company.model.Time;
 
-public class AreaStatistics implements Statistics {
+public class BaseStatistics implements Statistics {
+    /* BASE STATISTICS */
     private double systemArea;               /* mean job number in system */
     private double cloudletArea;            /* mean job number in cloudlet */
     private double cloudArea;           /* mean job number in cloud */
@@ -12,12 +13,15 @@ public class AreaStatistics implements Statistics {
     private double n1CloudArea;         /* mean n1 job number in cloud */
     private double n2CloudArea;         /* mean n2 job number in cloud */
 
+    private double currentTime;         /* this statistics current time */
+
     private long processedN1JobsClet;
     private long processedN2JobsClet;
     private long processedN1JobsCloud;
     private long processedN2JobsCloud;
 
-    public AreaStatistics() {
+
+    public BaseStatistics() {
         this.systemArea = 0.0;
         this.cloudletArea = 0.0;
         this.cloudArea = 0.0;
@@ -25,6 +29,8 @@ public class AreaStatistics implements Statistics {
         this.n2CletArea = 0.0;
         this.n1CloudArea = 0.0;
         this.n2CloudArea = 0.0;
+
+        this.currentTime = 0.0;
 
         this.processedN1JobsClet = 0;
         this.processedN2JobsClet = 0;
@@ -43,6 +49,8 @@ public class AreaStatistics implements Statistics {
             this.n2CletArea += deltaT * systemState.getN2Clet();
             this.n1CloudArea += deltaT * systemState.getN1Cloud();
             this.n2CloudArea += deltaT * systemState.getN2Cloud();
+
+            this.currentTime += deltaT;
         }
     }
 
@@ -87,6 +95,10 @@ public class AreaStatistics implements Statistics {
         return n2CloudArea;
     }
 
+    public double getCurrentTime() {
+        return currentTime;
+    }
+
     public long getProcessedN1JobsClet() {
         return processedN1JobsClet;
     }
@@ -101,5 +113,10 @@ public class AreaStatistics implements Statistics {
 
     public long getProcessedN2JobsCloud() {
         return processedN2JobsCloud;
+    }
+
+    public long getProcessedSystemJobsNumber() {
+        return this.processedN1JobsClet + this.processedN2JobsClet +
+                this.processedN1JobsCloud + this.processedN2JobsCloud;
     }
 }
