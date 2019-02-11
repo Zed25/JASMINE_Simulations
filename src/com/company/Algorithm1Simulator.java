@@ -3,9 +3,9 @@ package com.company;
 import com.company.model.SystemState;
 import com.company.model.Time;
 import com.company.model.event.CloudEvent;
+import com.company.model.event.CloudletEvent;
 import com.company.model.event.NextEventInfo;
 import com.company.model.event.enumeration.ClassType;
-import com.company.model.event.CloudletEvent;
 import com.company.model.event.enumeration.EventLocation;
 import com.company.model.event.enumeration.EventStatus;
 import com.company.model.statistics.AreaStatistics;
@@ -21,7 +21,7 @@ public class Algorithm1Simulator {
 
     private final double START = 0.0;               /* initial (open the door) */
     private final double STOP = 2000000.0;           /* terminal (close the door) time */
-    private final double INFINITY = 100*STOP;       /* infinity, much bigger than STOP */
+    private final double INFINITY = 100 * STOP;       /* infinity, much bigger than STOP */
 
     /* INPUT VARIABLES */
     private final int N = 20;                       /* cloudlet threshold (cloudlet servers number) */
@@ -32,23 +32,29 @@ public class Algorithm1Simulator {
     private final double mu1Cloud = 0.25;           /* cloud CLASS1 service rate */
     private final double mu2Cloud = 0.22;           /* cloud CLASS2 service rate */
     private final double hyperexpProb = 0.2;        /* Hyperexponential probability */
-
-
-    private double arrival[] = {START, START};      /* init arrival time for CLASS1 <- arrival[0] and CLASS2 <- arrival[1]*/
-
-    /* UTILITIES */
-    private Rngs rngs;
-    private Rvgs rvgs;
-    private Time t;
-
-    private SystemState systemState;                /* system state */
-
     /* BATCH MEANS */
     long eventCounter = 1;                    /* event processed in batch counter,
                                                if eventCounter mod(batchSize - 1) == 0 -> reset batch statistics */
     long batchSize = 100000;                  /* number of event processed in a batch */
+    private double arrival[] = {START, START};      /* init arrival time for CLASS1 <- arrival[0] and CLASS2 <- arrival[1]*/
+    /* UTILITIES */
+    private Rngs rngs;
+    private Rvgs rvgs;
+    private Time t;
+    private SystemState systemState;                /* system state */
 
-    /** -----------------------------------------------------------------
+    /**
+     * ----------------------------------------------------------------------------------------------------------------
+     * --------------------------------------------------   MAIN   ----------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------
+     */
+    public static void main(String[] args) {
+        Algorithm1Simulator algorithm1Simulator = new Algorithm1Simulator();
+        algorithm1Simulator.simulate();
+    }
+
+    /**
+     * -----------------------------------------------------------------
      * generate the next arrival value, it must be added to current time
      * ------------------------------------------------------------------
      */
@@ -56,42 +62,43 @@ public class Algorithm1Simulator {
         switch (classType) {
             case CLASS1:                                    /* get CLASS1 next exponential value */
                 rvgs.rngs.selectStream(0);
-                return rvgs.exponential(1/lambda1);
+                return rvgs.exponential(1 / lambda1);
             case CLASS2:                                    /* get CLASS2 next exponential value */
                 rvgs.rngs.selectStream(1);
-                return rvgs.exponential(1/lambda2);
+                return rvgs.exponential(1 / lambda2);
             default:                                        /* error, return 0.0 */
                 return 0.0;
         }
     }
 
-    /** -----------------------------------------------------------------------------------------------
+    /**
+     * -----------------------------------------------------------------------------------------------
      * generate cloudlet the next service time, it must be added to current time to get departure time
      * ------------------------------------------------------------------------------------------------
      */
     public double getServiceCloudlet(ClassType classType) {
-        switch (classType){
+        switch (classType) {
             case CLASS1:                                    /* get CLASS1 next hyperexponential value */
                 rvgs.rngs.selectStream(2);
                 if (rvgs.rngs.random() <= hyperexpProb) {
-                    return rvgs.exponential(1/(2 * hyperexpProb * mu1Cloudlet));
+                    return rvgs.exponential(1 / (2 * hyperexpProb * mu1Cloudlet));
                 } else {
-                    return rvgs.exponential(1/(2 * (1-hyperexpProb) * mu1Cloudlet));
+                    return rvgs.exponential(1 / (2 * (1 - hyperexpProb) * mu1Cloudlet));
                 }
             case CLASS2:                                    /* get CLASS2 next hyperexponential value */
                 rvgs.rngs.selectStream(3);
                 if (rvgs.rngs.random() <= hyperexpProb) {
-                    return rvgs.exponential(2* hyperexpProb * mu2Cloudlet);
+                    return rvgs.exponential(2 * hyperexpProb * mu2Cloudlet);
                 } else {
-                    return rvgs.exponential(2 * (1-hyperexpProb) * mu2Cloudlet);
+                    return rvgs.exponential(2 * (1 - hyperexpProb) * mu2Cloudlet);
                 }
             default:                                        /* error, return 0.0 */
                 return 0.0;
         }
     }
 
-
-    /** --------------------------------------------------------------------------------------------
+    /**
+     * --------------------------------------------------------------------------------------------
      * generate cloud the next service time, it must be added to current time to get departure time
      * ---------------------------------------------------------------------------------------------
      */
@@ -99,28 +106,20 @@ public class Algorithm1Simulator {
         switch (classType) {
             case CLASS1:                                    /* get CLASS1 next exponential value */
                 rvgs.rngs.selectStream(4);
-                return rvgs.exponential(1/mu1Cloud);
+                return rvgs.exponential(1 / mu1Cloud);
             case CLASS2:                                    /* get CLASS2 next exponential value */
                 rvgs.rngs.selectStream(5);
-                return rvgs.exponential(1/mu2Cloud);
+                return rvgs.exponential(1 / mu2Cloud);
             default:                                        /* error, return 0.0 */
                 return 0.0;
         }
     }
 
-    /** ----------------------------------------------------------------------------------------------------------------
-     *  --------------------------------------------------   MAIN   ----------------------------------------------------
-     *  ----------------------------------------------------------------------------------------------------------------
-     *  */
-    public static void main(String[] args) {
-	    Algorithm1Simulator algorithm1Simulator = new Algorithm1Simulator();
-	    algorithm1Simulator.simulate();
-    }
-
-    /** ----------------------------------------------------------------------------------------------------------------
-     *  ----------------------------------------------   SIMULATION   --------------------------------------------------
-     *  ----------------------------------------------------------------------------------------------------------------
-     *  */
+    /**
+     * ----------------------------------------------------------------------------------------------------------------
+     * ----------------------------------------------   SIMULATION   --------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------
+     */
     private void simulate() {
 
         NextEventInfo nextEventInfo;            /* next event info :
@@ -184,8 +183,7 @@ public class Algorithm1Simulator {
             if (nextEventInfo.getIndex() == 0 &&
                     nextEventInfo.getLocation() == EventLocation.CLOUDLET) {  /* process cloudlet arrival*/
                 this.execAlgorithm1(cloudletEvents, cloudEvents, systemState, t);  /* exec algorithm 1 */
-            }
-            else if (nextEventInfo.getIndex() != 0
+            } else if (nextEventInfo.getIndex() != 0
                     && nextEventInfo.getLocation() == EventLocation.CLOUDLET) { /* process cloudlet departure */
                 this.processCloudletDeparture(nextEventInfo.getIndex(), cloudletEvents, systemState, batchStatistics.getLastBatchStatistics());
             } else { /* process cloud departure */
@@ -194,6 +192,8 @@ public class Algorithm1Simulator {
         }
 
         //TODO print statistics
+        //Cdh cdh = new Cdh();
+        //cdh.fit(new int[]{1, 2, 3}, 2, 3,8);
 
         DecimalFormat decimalFourZero = new DecimalFormat("###0.0000");
         for (int i = 0; i < batchStatistics.getBatchMeanStatistics().size(); i++) {
@@ -250,10 +250,11 @@ public class Algorithm1Simulator {
 
     }
 
-    /** ----------------------------------------------------------------------------------------------------------------
-     *  ----------------------------------------------   ALGORITHM 1   -------------------------------------------------
-     *  ----------------------------------------------------------------------------------------------------------------
-     *  */
+    /**
+     * ----------------------------------------------------------------------------------------------------------------
+     * ----------------------------------------------   ALGORITHM 1   -------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------
+     */
     private void execAlgorithm1(CloudletEvent[] cloudletEvents,
                                 List<CloudEvent> cloudEvents, SystemState systemState, Time time) {
         if ((systemState.getN1Clet() + systemState.getN2Clet()) == N) {     /* check (n1 + n2 = N)*/
@@ -273,7 +274,8 @@ public class Algorithm1Simulator {
      *  accept job to cloudlet
      *
      *  */
-    /** ----------------------
+    /**
+     * ----------------------
      * accept job to cloudlet
      * -----------------------
      */
@@ -285,7 +287,8 @@ public class Algorithm1Simulator {
         }
     }
 
-    /** ----------------------
+    /**
+     * ----------------------
      * process CLASS1 arrival
      * -----------------------
      */
@@ -299,7 +302,8 @@ public class Algorithm1Simulator {
         cloudletEvents[s].setClassType(ClassType.CLASS1);                   /* set event class 1 */
     }
 
-    /** ----------------------
+    /**
+     * ----------------------
      * process CLASS2 arrival
      * -----------------------
      */
@@ -313,7 +317,8 @@ public class Algorithm1Simulator {
         cloudletEvents[s].setClassType(ClassType.CLASS2);                   /* set event class 2 */
     }
 
-    /** --------------------------
+    /**
+     * --------------------------
      * process cloudlet departure
      * ---------------------------
      */
@@ -332,7 +337,8 @@ public class Algorithm1Simulator {
         cloudletEvents[eventIndex].setEventStatus(EventStatus.NOT_ACTIVE);
     }
 
-    /** --------------------------------------------------------------
+    /**
+     * --------------------------------------------------------------
      * return the index of the available cloudlet server idle longest
      * ---------------------------------------------------------------
      */
@@ -360,7 +366,8 @@ public class Algorithm1Simulator {
      *  ----------------------------------------------------------------------------------------------------------------
      *  */
 
-    /** -------------------
+    /**
+     * -------------------
      * accept job to cloud
      * --------------------
      */
@@ -394,7 +401,8 @@ public class Algorithm1Simulator {
         }
     }
 
-    /** -----------------------------------------------------------
+    /**
+     * -----------------------------------------------------------
      * return the index of the available cloud server idle longest
      * ------------------------------------------------------------
      */
@@ -410,7 +418,8 @@ public class Algorithm1Simulator {
         return cloudEvents.size() - 1;                                              /* return it */
     }
 
-    /** -----------------------
+    /**
+     * -----------------------
      * process cloud departure
      * ------------------------
      */
@@ -437,7 +446,8 @@ public class Algorithm1Simulator {
      *  ----------------------------------------------------------------------------------------------------------------
      *  */
 
-    /** ---------------------------------------
+    /**
+     * ---------------------------------------
      * return the index of the next event type
      * ---------------------------------------
      */
@@ -464,7 +474,7 @@ public class Algorithm1Simulator {
             cloudletScan++;
             if ((cloudletEvents[cloudletScan].getEventStatus() == EventStatus.ACTIVE) &&
                     (cloudletEvents[cloudletScan].getNextEventTime() < cloudletEvents[cloudletIndex].getNextEventTime())
-                    )
+            )
                 cloudletIndex = cloudletScan;
         }
 
@@ -486,7 +496,7 @@ public class Algorithm1Simulator {
                 cloudScan++;
                 if (cloudEvents.get(cloudScan).getEventStatus() == EventStatus.ACTIVE &&
                         cloudEvents.get(cloudScan).getNextEventTime() < cloudEvents.get(cloudIndex).getNextEventTime()
-                        ) {
+                ) {
                     cloudIndex = cloudScan;
                 }
             }
@@ -512,7 +522,8 @@ public class Algorithm1Simulator {
         return new NextEventInfo(eventIndex, eventLocation);
     }
 
-    /** --------------------
+    /**
+     * --------------------
      * compute next arrival
      * ---------------------
      */

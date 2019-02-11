@@ -15,35 +15,59 @@ public class SystemState {
     }
 
     /* check if system is empty */
-    public boolean systemIsEmpty(){
+    public boolean systemIsEmpty() {
         return n1Clet == 0 && n2Clet == 0 && n1Cloud == 0 && n2Cloud == 0;
     }
 
     /* increment n1 cloudlet state variable */
-    public void incrementN1Clet() {this.n1Clet++;}
+    public void incrementN1Clet() {
+        this.n1Clet++;
+    }
+
     /* decrement n1 cloudlet state variable*/
-    public void decrementN1Clet() {this.n1Clet--;}
+    public void decrementN1Clet() {
+        this.n1Clet--;
+    }
 
     /* increment n2 cloudlet state variable */
-    public void incrementN2Clet() {this.n2Clet++;}
+    public void incrementN2Clet() {
+        this.n2Clet++;
+    }
+
     /* decrement n2 cloudlet state variable*/
-    public void decrementN2Clet() {this.n2Clet--;}
+    public void decrementN2Clet() {
+        this.n2Clet--;
+    }
 
     /* increment n1 cloud state variable */
-    public void incrementN1Cloud() {this.n1Cloud++;}
+    public void incrementN1Cloud() {
+        this.n1Cloud++;
+    }
+
     /* decrement n1 cloud state variable*/
-    public void decrementN1Cloud() {this.n1Cloud--;}
+    public void decrementN1Cloud() {
+        this.n1Cloud--;
+    }
 
     /* increment n2 cloud state variable */
-    public void incrementN2Cloud() {this.n2Cloud++;}
+    public void incrementN2Cloud() {
+        this.n2Cloud++;
+    }
+
     /* decrement n2 cloud state variable*/
-    public void decrementN2Cloud() {this.n2Cloud--;}
+    public void decrementN2Cloud() {
+        this.n2Cloud--;
+    }
 
     /* get cloudlet aggregate state */
-    public long getCloudletJobsNumber() {return this.n1Clet + this.n2Clet;}
+    public long getCloudletJobsNumber() {
+        return this.n1Clet + this.n2Clet;
+    }
 
     /* get cloud aggregate state*/
-    public long getCloudJobsNumber() {return this.n1Cloud + this.n2Cloud;}
+    public long getCloudJobsNumber() {
+        return this.n1Cloud + this.n2Cloud;
+    }
 
     public long getN1Clet() {
         return n1Clet;
