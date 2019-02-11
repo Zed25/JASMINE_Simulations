@@ -2,11 +2,14 @@ package com.company.model.statistics;
 
 import com.company.model.SystemState;
 import com.company.model.Time;
+import com.company.model.utils.CSVPrintable;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-public class BatchStatistics implements BatchMeanStatistics {
+public class BatchStatistics implements BatchMeanStatistics, CSVPrintable {
 
     private List<BaseStatistics> batchMeanStatistics;
 
@@ -41,7 +44,7 @@ public class BatchStatistics implements BatchMeanStatistics {
     @Override
     public void updateStatistics(SystemState systemState, Time time) {
         int lastBatchIndex = this.batchMeanStatistics.size() - 1;
-        this.batchMeanStatistics.get(lastBatchIndex).updateStatistics(systemState,time);
+        this.batchMeanStatistics.get(lastBatchIndex).updateStatistics(systemState, time);
     }
 
     @Override
@@ -61,5 +64,25 @@ public class BatchStatistics implements BatchMeanStatistics {
     public BaseStatistics getLastBatchStatistics() {
         int lastBatchIndex = this.batchMeanStatistics.size() - 1;
         return this.batchMeanStatistics.get(lastBatchIndex);
+    }
+
+    @Override
+    public void writeToCSV(PrintWriter printer) {
+        String[] headers = {
+                "systemArea",
+                "cloudletArea",
+                "cloudArea",
+                "n1CletArea",
+                "n2CletArea",
+                "n1CloudArea",
+                "n2CloudArea",
+                "processedN1JobsClet",
+                "processedN2JobsClet",
+                "processedN1JobsCloud",
+                "processedN2JobsCloud"
+        };
+        printer.println(String.join(",", Arrays.asList(headers)));
+        for (BaseStatistics baseStatistics : this.batchMeanStatistics)
+            baseStatistics.writeToCSV(printer);
     }
 }

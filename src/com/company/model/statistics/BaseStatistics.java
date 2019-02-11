@@ -2,8 +2,12 @@ package com.company.model.statistics;
 
 import com.company.model.SystemState;
 import com.company.model.Time;
+import com.company.model.utils.CSVPrintable;
 
-public class BaseStatistics implements Statistics {
+import java.io.PrintWriter;
+import java.text.DecimalFormat;
+import java.util.Arrays;
+public class BaseStatistics implements Statistics, CSVPrintable {
     /* BASE STATISTICS */
     private double systemArea;               /* mean job number in system */
     private double cloudletArea;            /* mean job number in cloudlet */
@@ -54,16 +58,19 @@ public class BaseStatistics implements Statistics {
         }
     }
 
-    public void incrementProcJobsN1Clet(){
+    public void incrementProcJobsN1Clet() {
         this.processedN1JobsClet++;
     }
-    public void incrementProcJobsN2Clet(){
+
+    public void incrementProcJobsN2Clet() {
         this.processedN2JobsClet++;
     }
-    public void incrementProcJobsN1Cloud(){
+
+    public void incrementProcJobsN1Cloud() {
         this.processedN1JobsCloud++;
     }
-    public void incrementProcJobsN2Cloud(){
+
+    public void incrementProcJobsN2Cloud() {
         this.processedN2JobsCloud++;
     }
 
@@ -118,5 +125,25 @@ public class BaseStatistics implements Statistics {
     public long getProcessedSystemJobsNumber() {
         return this.processedN1JobsClet + this.processedN2JobsClet +
                 this.processedN1JobsCloud + this.processedN2JobsCloud;
+    }
+
+    @Override
+    public void writeToCSV(PrintWriter printer) {
+        DecimalFormat f = new DecimalFormat("###0.0000000000000");
+        String[] strings = {
+                f.format(this.systemArea),
+                f.format(this.cloudletArea),
+                f.format(this.cloudArea),
+                f.format(this.n1CletArea),
+                f.format(this.n2CletArea),
+                f.format(this.n1CloudArea),
+                f.format(this.n2CloudArea),
+                f.format(this.processedN1JobsClet),
+                f.format(this.processedN2JobsClet),
+                f.format(this.processedN1JobsCloud),
+                f.format(this.processedN2JobsCloud)
+        };
+
+        printer.println(String.join(",", Arrays.asList(strings)));
     }
 }

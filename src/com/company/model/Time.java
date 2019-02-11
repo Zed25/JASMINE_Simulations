@@ -5,7 +5,8 @@ public class Time {
     private double current;                /* current time                        */
     private double next;                   /* next (most imminent) event time     */
 
-    public Time(){}
+    public Time() {
+    }
 
     public double getCurrent() {
         return current;

@@ -1,7 +1,6 @@
 package com.company.model.event;
 
 import com.company.model.event.enumeration.ClassType;
-import com.company.model.event.enumeration.EventLocation;
 import com.company.model.event.enumeration.EventStatus;
 
 public abstract class Event {

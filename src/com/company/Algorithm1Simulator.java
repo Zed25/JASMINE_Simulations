@@ -11,20 +11,22 @@ import com.company.model.event.enumeration.EventStatus;
 import com.company.model.statistics.BaseStatistics;
 import com.company.model.statistics.BatchStatistics;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Algorithm1Simulator {
 
-    private final long initialSeeed = 12345678; //TODO delete this
+    private final long initialSeeed = 12345; //TODO delete this
 
     private final double START = 0.0;               /* initial (open the door) */
-    private final double STOP = 2000000.0;           /* terminal (close the door) time */
+    private final double STOP = 300.0;           /* terminal (close the door) time */
     private final double INFINITY = 100*STOP;       /* infinity, much bigger than STOP */
 
     /* INPUT VARIABLES */
-    private final int N = 2;                       /* cloudlet threshold (cloudlet servers number) */
+    private final int N = 20;                       /* cloudlet threshold (cloudlet servers number) */
     private final double lambda1 = 6.0;             /* CLASS1 arrival rate */
     private final double lambda2 = 6.25;            /* CLASS2 arrival rate */
     private final double mu1Cloudlet = 0.45;        /* cloudlet CLASS1 service rate */
@@ -139,6 +141,7 @@ public class Algorithm1Simulator {
 
         BaseStatistics stationaryStatistics = new BaseStatistics(); /* stationary statistics */
         List<Double> stationaryRespTimeCheck = new ArrayList<>();
+        List<Double> stationaryTimes = new ArrayList<>();
 
         rngs.plantSeeds(initialSeeed);          /* plan seeds */
 
@@ -179,6 +182,7 @@ public class Algorithm1Simulator {
             stationaryStatistics.updateStatistics(systemState, t); /* stationary */
             if (stationaryStatistics.getProcessedSystemJobsNumber() > 0) {
                 stationaryRespTimeCheck.add(stationaryStatistics.getSystemArea() / stationaryStatistics.getProcessedSystemJobsNumber());
+                stationaryTimes.add(stationaryStatistics.getCurrentTime());
             }
             eventCounter++;                               /* update job counter */
             /*System.out.println("-------------------------------------------------------------");
@@ -203,6 +207,18 @@ public class Algorithm1Simulator {
         }
 
         //TODO print statistics
+        /* --------------------------- Stationary statistics ------------------------ */
+        DecimalFormat f = new DecimalFormat("###0.0000000000000");
+        PrintWriter printWriter = null;
+        try {
+            printWriter = new PrintWriter("./stationary_check_12345.csv");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        for (int i=0; i < stationaryRespTimeCheck.size(); i++)
+            printWriter.println(f.format(stationaryTimes.get(i)) + "," + f.format(stationaryRespTimeCheck.get(i)));
+        printWriter.flush();
+        printWriter.close();
 
         DecimalFormat decimalFourZero = new DecimalFormat("###0.0000");
         for (int i = 0; i < batchStatistics.getBatchMeanStatistics().size(); i++) {
