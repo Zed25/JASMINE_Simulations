@@ -1,5 +1,6 @@
 package com.company;
 
+import com.company.configuration.Configuration;
 import com.company.model.SystemState;
 import com.company.model.Time;
 import com.company.model.event.CloudEvent;
@@ -22,8 +23,8 @@ public class Algorithm1Simulator {
     private final long initialSeeed = 12345; //TODO delete this
 
     private final double START = 0.0;               /* initial (open the door) */
-    private final double STOP = 300.0;           /* terminal (close the door) time */
-    private final double INFINITY = 100*STOP;       /* infinity, much bigger than STOP */
+    private final double STOP = 2000000.0;           /* terminal (close the door) time */
+    private final double INFINITY = 100 * STOP;       /* infinity, much bigger than STOP */
 
     /* INPUT VARIABLES */
     private final int N = 20;                       /* cloudlet threshold (cloudlet servers number) */
@@ -42,8 +43,6 @@ public class Algorithm1Simulator {
     private Rngs rngs;
     private Rvgs rvgs;
     private Time t;
-
-    private SystemState systemState;                /* system state */
 
     /* BATCH MEANS */
     long eventCounter = 1;                    /* event processed in batch counter,
@@ -131,14 +130,16 @@ public class Algorithm1Simulator {
                                                    nextEventInfo[0] <- index,
                                                    nextEventInfo <- Location (CLOUDLET, CLOUD) */
 
-        this.systemState = new SystemState();   /* init system state (0,0,0,0) */
+        SystemState systemState = new SystemState();   /* init system state (0,0,0,0) */
 
         this.rngs = new Rngs();                 /* init random number generators */
         this.rvgs = new Rvgs(rngs);             /* init random variable generators */
         this.t = new Time();                    /* init time */
 
+        /* BATCH STATISTICS */
         BatchStatistics batchStatistics = new BatchStatistics(); /* init batch statistics */
 
+        /* STATIONARY STATISTICS */
         BaseStatistics stationaryStatistics = new BaseStatistics(); /* stationary statistics */
         List<Double> stationaryRespTimeCheck = new ArrayList<>();
         List<Double> stationaryTimes = new ArrayList<>();
@@ -176,21 +177,16 @@ public class Algorithm1Simulator {
             /* --- compute statistics --- */
             if (eventCounter % (batchSize - 1) == 0) {    /* start new batch mean*/
                 batchStatistics.resetBatch();
-            } else {                                    /* update area statistics */
-                batchStatistics.updateStatistics(systemState, t);
+            } else {                                    /* update batch statistics */
+                batchStatistics.updateBatchStatistics();
             }
-            stationaryStatistics.updateStatistics(systemState, t); /* stationary */
+            batchStatistics.updateStatistics(systemState, t); /* update batch base statistics before set t.currentTime to t.next */
+            stationaryStatistics.updateStatistics(systemState, t); /* update stationary statistics */
             if (stationaryStatistics.getProcessedSystemJobsNumber() > 0) {
                 stationaryRespTimeCheck.add(stationaryStatistics.getSystemArea() / stationaryStatistics.getProcessedSystemJobsNumber());
                 stationaryTimes.add(stationaryStatistics.getCurrentTime());
             }
             eventCounter++;                               /* update job counter */
-            /*System.out.println("-------------------------------------------------------------");
-            System.out.println("\t\t\t\t\t\tSystem State");
-            System.out.println("-------------------------------------------------------------");
-            System.out.println("\t\t N1 Cloudlet = " + systemState.getN1Clet() + "\t\t\t N1 Cloud = " + systemState.getN1Cloud());
-            System.out.println("\t\t N2 Cloudlet = " + systemState.getN2Clet() + "\t\t\t N2 Cloud = " + systemState.getN2Cloud());*/
-
 
             t.setCurrent(t.getNext());                      /* advance the clock to next event*/
 
@@ -208,70 +204,48 @@ public class Algorithm1Simulator {
 
         //TODO print statistics
         /* --------------------------- Stationary statistics ------------------------ */
-        DecimalFormat f = new DecimalFormat("###0.0000000000000");
-        PrintWriter printWriter = null;
-        try {
-            printWriter = new PrintWriter("./stationary_check_12345.csv");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+        if (Configuration.PRINT_STATIONARY_STATISTICS) {
+            DecimalFormat f = new DecimalFormat("###0.0000000000000");
+            PrintWriter printWriter = null;
+            try {
+                printWriter = new PrintWriter("./stationary_check_12345.csv");
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            for (int i = 0; i < stationaryRespTimeCheck.size(); i++)
+                printWriter.println(f.format(stationaryTimes.get(i)) + "," + f.format(stationaryRespTimeCheck.get(i)));
+            printWriter.flush();
+            printWriter.close();
         }
-        for (int i=0; i < stationaryRespTimeCheck.size(); i++)
-            printWriter.println(f.format(stationaryTimes.get(i)) + "," + f.format(stationaryRespTimeCheck.get(i)));
-        printWriter.flush();
-        printWriter.close();
 
-        DecimalFormat decimalFourZero = new DecimalFormat("###0.0000");
-        for (int i = 0; i < batchStatistics.getBatchMeanStatistics().size(); i++) {
-            BaseStatistics baseStatistics = batchStatistics.getBatchMeanStatistics().get(i);
-            System.out.println("\n-------------------------------------------------------------");
-            System.out.println("\t\t\t\t\t\tBatch " + (i + 1) + " Statistics");
-            System.out.println("-------------------------------------------------------------\n");
+        if (Configuration.PRINT_BATCH_MEANS) {
+            DecimalFormat decimalFourZero = new DecimalFormat("###0.0000");
+            for (int i = 0; i < batchStatistics.getBatchMeanStatistics().size(); i++) {
+                System.out.println("\n-------------------------------------------------------------");
+                System.out.println("\t\t\t\t\t\tBatch " + (i + 1) + " Statistics");
+                System.out.println("-------------------------------------------------------------\n");
 
-            System.out.println("avg wait .......... = " + decimalFourZero.format(baseStatistics.getSystemArea() /
-                    (baseStatistics.getProcessedN1JobsClet() + baseStatistics.getProcessedN2JobsClet() + baseStatistics.getProcessedN1JobsCloud() + baseStatistics.getProcessedN2JobsCloud())));
+                System.out.println("system response time ................. = " + decimalFourZero.format(batchStatistics.getSystemRespTime().get(i)));
+                System.out.println("class 1 response time ................ = " + decimalFourZero.format(batchStatistics.getClass1RespTime().get(i)));
+                System.out.println("class 2 response time ................ = " + decimalFourZero.format(batchStatistics.getClass2RespTime().get(i)));
+                System.out.println("global thr ........................... = " + decimalFourZero.format(batchStatistics.getGlobalThr().get(i)));
+                System.out.println("class 1 thr .......................... = " + decimalFourZero.format(batchStatistics.getClass1Thr().get(i)));
+                System.out.println("class 2 thr .......................... = " + decimalFourZero.format(batchStatistics.getClass2Thr().get(i)));
+                System.out.println("cloudlet eff class 1 thr ............. = " + decimalFourZero.format(batchStatistics.getCloudletEffectiveClass1Thr().get(i)));
+                System.out.println("cloudlet eff class 2 thr ............. = " + decimalFourZero.format(batchStatistics.getCloudletEffectiveClass2Thr().get(i)));
+                System.out.println("cloud class 1 thr .................... = " + decimalFourZero.format(batchStatistics.getCloudClass1Thr().get(i)));
+                System.out.println("cloud class 2 thr .................... = " + decimalFourZero.format(batchStatistics.getCloudClass2Thr().get(i)));
+                System.out.println("cloudlet class 1 resp time ........... = " + decimalFourZero.format(batchStatistics.getClass1CletRespTime().get(i)));
+                System.out.println("cloudlet class 2 resp time ........... = " + decimalFourZero.format(batchStatistics.getClass2CletRespTime().get(i)));
+                System.out.println("cloud class 1 resp time .............. = " + decimalFourZero.format(batchStatistics.getClass1CloudRespTime().get(i)));
+                System.out.println("cloud class 2 resp time .............. = " + decimalFourZero.format(batchStatistics.getClass2CloudRespTime().get(i)));
+                System.out.println("cloudlet class 1 mean population ..... = " + decimalFourZero.format(batchStatistics.getClass1CletMeanPop().get(i)));
+                System.out.println("cloudlet class 2 mean population ..... = " + decimalFourZero.format(batchStatistics.getClass2CletMeanPop().get(i)));
+                System.out.println("cloud class 1 mean population ........ = " + decimalFourZero.format(batchStatistics.getClass1CloudMeanPop().get(i)));
+                System.out.println("cloud class 2 mean population ........ = " + decimalFourZero.format(batchStatistics.getClass2CloudMeanPop().get(i)));
+
+            }
         }
-        /*DecimalFormat decimalFourZero = new DecimalFormat("###0.0000");
-
-        System.out.println("-------------------------------------------------------------");
-        System.out.println("\t\t\t\t\t\tSystem State");
-        System.out.println("-------------------------------------------------------------");
-        System.out.println("\t\t N1 Cloudlet = " + systemState.getN1Clet() + "\t\t\t N1 Cloud = " + systemState.getN1Cloud());
-        System.out.println("\t\t N2 Cloudlet = " + systemState.getN2Clet() + "\t\t\t N2 Cloud = " + systemState.getN2Cloud());
-
-        /* -------------------------------------------------
-         * PRINT AREA STATISTICS
-         * -------------------------------------------------
-         * */
-        /*System.out.println("\n-------------------------------------------------------------");
-        System.out.println("\t\t\t\t\t\tArea Statistics");
-        System.out.println("-------------------------------------------------------------\n");
-        System.out.println("\nfor " + (this.processedN1JobsClet + this.processedN2JobsClet + processedN1JobsCloud + processedN2JobsCloud) + " jobs the service node statistics are:\n");
-        System.out.println("\n-------------------------------------------------------------");
-        System.out.println("\t\t\t\t\t\tSystem Area Statistics");
-        System.out.println("-------------------------------------------------------------\n");
-        System.out.println("  avg # in node ................. =   " + decimalFourZero.format(areaStatistics.getSystemArea() / t.getCurrent()));
-        System.out.println("  avg interarrivals ............. =   " + decimalFourZero.format(cloudletEvents[0].getNextEventTime() / (this.processedN1JobsClet + this.processedN2JobsClet + this.processedN1JobsCloud + this.processedN2JobsCloud)));
-        System.out.println("  avg wait ...................... =   " + decimalFourZero.format(areaStatistics.getSystemArea() / (this.processedN1JobsClet + this.processedN2JobsClet + this.processedN1JobsCloud + this.processedN2JobsCloud)));
-
-        System.out.println("\n-------------------------------------------------------------");
-        System.out.println("\t\t\t\t\t\tCloudlet Area Statistics");
-        System.out.println("-------------------------------------------------------------\n");
-        System.out.println("  avg # in cloudlet ............. =   " + decimalFourZero.format(areaStatistics.getCloudletArea() / t.getCurrent()));
-        System.out.println("  avg wait ...................... =   " + decimalFourZero.format(areaStatistics.getCloudletArea() / (this.processedN1JobsClet + this.processedN2JobsClet)));
-        System.out.println("  avg type 1 # in cloudlet ...... =   " + decimalFourZero.format(areaStatistics.getN1CletArea() / t.getCurrent()));
-        System.out.println("  avg type 1 wait ............... =   " + decimalFourZero.format(areaStatistics.getN1CletArea() / this.processedN1JobsClet));
-        System.out.println("  avg type 2 # in cloudlet ...... =   " + decimalFourZero.format(areaStatistics.getN2CletArea() / t.getCurrent()));
-        System.out.println("  avg type 2 wait ............... =   " + decimalFourZero.format(areaStatistics.getN2CletArea() / this.processedN1JobsClet));
-
-        System.out.println("\n-------------------------------------------------------------");
-        System.out.println("\t\t\t\t\t\tCloud Area Statistics");
-        System.out.println("-------------------------------------------------------------\n");
-        System.out.println("  avg # in cloud ................ =   " + decimalFourZero.format(areaStatistics.getCloudArea() / t.getCurrent()));
-        System.out.println("  avg wait ...................... =   " + decimalFourZero.format(areaStatistics.getCloudArea() / (this.processedN1JobsCloud + this.processedN2JobsCloud)));
-        System.out.println("  avg type 1 # in cloud ......... =   " + decimalFourZero.format(areaStatistics.getN1CloudArea() / t.getCurrent()));
-        System.out.println("  avg type 1 wait ............... =   " + decimalFourZero.format(areaStatistics.getN1CloudArea() / this.processedN1JobsCloud));
-        System.out.println("  avg type 2 # in cloud ......... =   " + decimalFourZero.format(areaStatistics.getN2CloudArea() / t.getCurrent()));
-        System.out.println("  avg type 2 wait ............... =   " + decimalFourZero.format(areaStatistics.getN2CloudArea() / this.processedN2JobsCloud));*/
 
     }
 

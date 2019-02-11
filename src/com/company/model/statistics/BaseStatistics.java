@@ -9,15 +9,17 @@ import java.text.DecimalFormat;
 import java.util.Arrays;
 public class BaseStatistics implements Statistics, CSVPrintable {
     /* BASE STATISTICS */
-    private double systemArea;               /* mean job number in system */
+    private double systemArea;              /* mean job number in system */
     private double cloudletArea;            /* mean job number in cloudlet */
-    private double cloudArea;           /* mean job number in cloud */
-    private double n1CletArea;          /* mean n1 job number in cloulet */
-    private double n2CletArea;          /* mean n2 job number in cloudlet */
-    private double n1CloudArea;         /* mean n1 job number in cloud */
-    private double n2CloudArea;         /* mean n2 job number in cloud */
+    private double cloudArea;               /* mean job number in cloud */
+    private double n1CletArea;              /* mean n1 job number in cloulet */
+    private double n2CletArea;              /* mean n2 job number in cloudlet */
+    private double n1CloudArea;             /* mean n1 job number in cloud */
+    private double n2CloudArea;             /* mean n2 job number in cloud */
+    private double n1Area;                  /* mean n2 job number */
+    private double n2Area;                  /* mean n2 job number */
 
-    private double currentTime;         /* this statistics current time */
+    private double currentTime;             /* this statistics current time */
 
     private long processedN1JobsClet;
     private long processedN2JobsClet;
@@ -33,6 +35,8 @@ public class BaseStatistics implements Statistics, CSVPrintable {
         this.n2CletArea = 0.0;
         this.n1CloudArea = 0.0;
         this.n2CloudArea = 0.0;
+        this.n1Area = 0.0;
+        this.n2Area = 0.0;
 
         this.currentTime = 0.0;
 
@@ -53,6 +57,8 @@ public class BaseStatistics implements Statistics, CSVPrintable {
             this.n2CletArea += deltaT * systemState.getN2Clet();
             this.n1CloudArea += deltaT * systemState.getN1Cloud();
             this.n2CloudArea += deltaT * systemState.getN2Cloud();
+            this.n1Area += deltaT * (systemState.getN1Clet() + systemState.getN1Cloud());
+            this.n2Area += deltaT * (systemState.getN2Clet() + systemState.getN2Cloud());
 
             this.currentTime += deltaT;
         }
@@ -84,6 +90,14 @@ public class BaseStatistics implements Statistics, CSVPrintable {
 
     public double getCloudArea() {
         return cloudArea;
+    }
+
+    public double getN1Area() {
+        return n1Area;
+    }
+
+    public double getN2Area() {
+        return n2Area;
     }
 
     public double getN1CletArea() {
@@ -125,6 +139,14 @@ public class BaseStatistics implements Statistics, CSVPrintable {
     public long getProcessedSystemJobsNumber() {
         return this.processedN1JobsClet + this.processedN2JobsClet +
                 this.processedN1JobsCloud + this.processedN2JobsCloud;
+    }
+
+    public long getProcessedN1JobsNumber() {
+        return this.processedN1JobsClet + this.processedN1JobsCloud;
+    }
+
+    public long getProcessedN2JobsNumber() {
+        return this.processedN2JobsClet + this.processedN2JobsCloud;
     }
 
     @Override
