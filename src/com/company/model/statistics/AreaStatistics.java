@@ -12,6 +12,11 @@ public class AreaStatistics implements Statistics {
     private double n1CloudArea;         /* mean n1 job number in cloud */
     private double n2CloudArea;         /* mean n2 job number in cloud */
 
+    private long processedN1JobsClet;
+    private long processedN2JobsClet;
+    private long processedN1JobsCloud;
+    private long processedN2JobsCloud;
+
     public AreaStatistics() {
         this.systemArea = 0.0;
         this.cloudletArea = 0.0;
@@ -20,20 +25,38 @@ public class AreaStatistics implements Statistics {
         this.n2CletArea = 0.0;
         this.n1CloudArea = 0.0;
         this.n2CloudArea = 0.0;
+
+        this.processedN1JobsClet = 0;
+        this.processedN2JobsClet = 0;
+        this.processedN1JobsCloud = 0;
+        this.processedN2JobsCloud = 0;
     }
 
     @Override
     public void updateStatistics(SystemState systemState, Time time) {
         if (time.getNext() > time.getCurrent()) {
             double deltaT = time.getNext() - time.getCurrent();
-            systemArea += deltaT * (systemState.getCloudletJobsNumber() + systemState.getCloudJobsNumber());
-            cloudletArea += deltaT * systemState.getCloudletJobsNumber();
-            cloudArea += deltaT * systemState.getCloudJobsNumber();
-            n1CletArea += deltaT * systemState.getN1Clet();
-            n2CletArea += deltaT * systemState.getN2Clet();
-            n1CloudArea += deltaT * systemState.getN1Cloud();
-            n2CloudArea += deltaT * systemState.getN2Cloud();
+            this.systemArea += deltaT * (systemState.getCloudletJobsNumber() + systemState.getCloudJobsNumber());
+            this.cloudletArea += deltaT * systemState.getCloudletJobsNumber();
+            this.cloudArea += deltaT * systemState.getCloudJobsNumber();
+            this.n1CletArea += deltaT * systemState.getN1Clet();
+            this.n2CletArea += deltaT * systemState.getN2Clet();
+            this.n1CloudArea += deltaT * systemState.getN1Cloud();
+            this.n2CloudArea += deltaT * systemState.getN2Cloud();
         }
+    }
+
+    public void incrementProcJobsN1Clet(){
+        this.processedN1JobsClet++;
+    }
+    public void incrementProcJobsN2Clet(){
+        this.processedN2JobsClet++;
+    }
+    public void incrementProcJobsN1Cloud(){
+        this.processedN1JobsCloud++;
+    }
+    public void incrementProcJobsN2Cloud(){
+        this.processedN2JobsCloud++;
     }
 
     public double getSystemArea() {
@@ -62,5 +85,21 @@ public class AreaStatistics implements Statistics {
 
     public double getN2CloudArea() {
         return n2CloudArea;
+    }
+
+    public long getProcessedN1JobsClet() {
+        return processedN1JobsClet;
+    }
+
+    public long getProcessedN2JobsClet() {
+        return processedN2JobsClet;
+    }
+
+    public long getProcessedN1JobsCloud() {
+        return processedN1JobsCloud;
+    }
+
+    public long getProcessedN2JobsCloud() {
+        return processedN2JobsCloud;
     }
 }
