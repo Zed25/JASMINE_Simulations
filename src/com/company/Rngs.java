@@ -44,19 +44,19 @@ class Rngs {
     static long CHECK = 399268537L; /* DON'T CHANGE THIS VALUE                  */
     long MODULUS = 2147483647; /* DON'T CHANGE THIS VALUE                  */
     long MULTIPLIER = 48271;      /* DON'T CHANGE THIS VALUE                  */
-    long DEFAULT = 123456789L; /* initial seed, use 0 < DEFAULT < MODULUS  */
+    long DEFAULT = 123456789L; /* initial SEED, use 0 < DEFAULT < MODULUS  */
 
     int STREAMS = 256;        /* # of streams, DON'T CHANGE THIS VALUE    */
     long A256 = 22925;      /* jump multiplier, DON'T CHANGE THIS VALUE */
 
     /* Barry Lawson 8 Nov 2007 */
-    // Consistent with the changes to the Rvgs constructor, the seed[] array and
+    // Consistent with the changes to the Rvgs constructor, the SEED[] array and
     // its associated variables should not be declared static.  If they are,
     // different instances of the Rngs class (which may be considered as
-    // _different_ generators) would share the same seed[] array.  Instead,
-    // each Rngs instance should have its own copy of seed[].
+    // _different_ generators) would share the same SEED[] array.  Instead,
+    // each Rngs instance should have its own copy of SEED[].
 
-//  static long[] seed;                     /* current state of each stream   */
+//  static long[] SEED;                     /* current state of each stream   */
 //  static int  stream        = 0;          /* stream index, 0 is the default */
 //  static int  initialized   = 0;          /* test for stream initialization */
 
@@ -70,7 +70,7 @@ class Rngs {
         seed = new long[STREAMS];
 
         /* Barry Lawson 8 Nov 2007 */
-        // The C version by default has the first entry in the seed[] array
+        // The C version by default has the first entry in the SEED[] array
         // set to DEFAULT even if you don't use PlantSeeds(). The Java
         // version should do the same, otherwise calls to random() without a
         // preceding plantSeeds() or selectStream() will always return 1.0
@@ -120,7 +120,7 @@ class Rngs {
         initialized = 1;
         s = stream;                            /* remember the current stream */
         selectStream(0);                       /* change to stream 0          */
-        putSeed(x);                            /* set seed[0]                 */
+        putSeed(x);                            /* set SEED[0]                 */
         stream = s;                            /* reset the current stream    */
         for (j = 1; j < STREAMS; j++) {
             x = A256 * (seed[j - 1] % Q) - R * (seed[j - 1] / Q);
@@ -152,7 +152,7 @@ class Rngs {
         if (x == 0)
             while (!ok) {
                 try {
-                    System.out.print("\nEnter a positive integer seed (9 digits or less) >> ");
+                    System.out.print("\nEnter a positive integer SEED (9 digits or less) >> ");
                     String line;
                     InputStreamReader r = new InputStreamReader(System.in);
                     BufferedReader ReadThis = new BufferedReader(r);

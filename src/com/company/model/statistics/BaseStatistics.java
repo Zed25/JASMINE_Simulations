@@ -149,6 +149,10 @@ public class BaseStatistics implements Statistics, CSVPrintable {
         return this.processedN2JobsClet + this.processedN2JobsCloud;
     }
 
+    public long getProcessedCletJobsNumber() {return this.processedN1JobsClet + this.processedN2JobsClet; }
+
+    public long getProcessedCloudJobsNumber() {return this.processedN1JobsCloud + this.processedN2JobsCloud; }
+
     @Override
     public void writeToCSV(PrintWriter printer) {
         DecimalFormat f = new DecimalFormat("###0.0000000000000");

@@ -3,10 +3,8 @@ package com.company.model.statistics;
 import com.company.model.SystemState;
 import com.company.model.Time;
 
-public interface BatchMeanStatistics extends Statistics {
+public interface BatchMeanStatistics extends AggregateStatistics {
 
     void resetBatch();
-
-    void updateBatchStatistics();
 
 }

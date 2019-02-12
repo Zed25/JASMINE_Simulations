@@ -143,7 +143,7 @@ public class BatchStatistics implements BatchMeanStatistics, CSVPrintable {
     }
 
     @Override
-    public void updateBatchStatistics() {
+    public void updateAggregateStatistics() {
         int lastBatchIndex = this.batchMeanStatistics.size() - 1;
         BaseStatistics baseStatistics = this.batchMeanStatistics.get(lastBatchIndex); /* get current batch statistics */
 
