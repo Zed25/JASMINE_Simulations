@@ -1,4 +1,4 @@
-package com.company;/* --------------------------------------------------------------------------
+package com.company.model.system;/* --------------------------------------------------------------------------
  * This is a Java library for generating random variates from six discrete
  * distributions
  *

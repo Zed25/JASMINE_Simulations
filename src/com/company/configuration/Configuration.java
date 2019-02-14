@@ -2,8 +2,7 @@ package com.company.configuration;
 
 public class Configuration {
     public static final boolean EXEC_STATIONARY_STATISTICS = false;
-    public static final boolean PRINT_STATIONARY_STATISTICS = false;
-    public static final boolean PRINT_BATCH_MEANS = true;
+    public static final boolean EXEC_BATCH_MEANS = true;
     public static final boolean EXECUTE_ALGORITHM_1 = true;
     public static final boolean EXECUTE_ALGORITHM_2 = false;
 
