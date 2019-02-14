@@ -5,6 +5,7 @@ public class Configuration {
     public static final boolean EXEC_BATCH_MEANS = true;
     public static final boolean EXECUTE_ALGORITHM_1 = true;
     public static final boolean EXECUTE_ALGORITHM_2 = false;
+    public static final boolean EXECUTE_CDH = true;
 
     public static final long SEED = 12345;
 

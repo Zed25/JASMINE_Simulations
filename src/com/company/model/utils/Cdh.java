@@ -1,20 +1,40 @@
 package com.company.model.utils;
 
+import java.io.PrintWriter;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
-public class Cdh {
+public class Cdh implements CSVPrintable{
     private double mean = 0; /* histogram mean */
     private double stdev = 0; /* histogram stdev */
     private double delta = 0; /* histogram bins width */
     private long lower = 0; /* lower outlier counts */
     private long higher = 0; /* higher outlier counts */
+    private int k = 0; /* number of bins */
 
-    private long counts[]; /* bin counts */
-    private double midpoints[]; /* bin midpoints */
-    private double proportions[]; /* bin proportions */
-    private double densities[]; /* bin densities */
+    private long[] counts; /* bin counts */
+    private double[] midpoints; /* bin midpoints */
+    private double[] proportions; /* bin proportions */
+    private double[] densities; /* bin densities */
+
+    public Cdh(List<Double> values) {
+        int n = values.size();
+        //int k = (int)((Math.floor(Math.log(n) / Math.log(2)) + Math.floor(Math.sqrt(n))) / 2); //log2(n) < k < sqrt(n)
+        //int k = (int)Math.ceil(Math.sqrt(n)); //Square-root choice
+        //int k = (int)(Math.ceil(Math.log(n) / Math.log(2)) + 1); //Sturges' formula
+        //int k = (int)(Math.floor(2 * Math.pow(n, 1./3))); //Rice Rule
+        int k = (int)(Math.floor(5./3 * Math.pow(n, 1./3))); //Rice Rule 2
+
+        double max = Collections.max(values);
+        double min = Collections.min(values);
+        this.fit(values, min, max, k);
+    }
 
     public void fit(List<Double> values, double min, double max, int k) {
+        this.k = k;
         this.delta = ((max - min) / k);
         this.counts = new long[k];
         this.midpoints = new double[k];
@@ -87,5 +107,40 @@ public class Cdh {
 
     public double[] getDensities() {
         return densities;
+    }
+
+    @Override
+    public void writeToCSV(PrintWriter printer) {
+        DecimalFormat f = new DecimalFormat("###0.0000000000000", new DecimalFormatSymbols(Locale.US));
+
+        printer.println(String.join(",", new String[]{
+                "mean",
+                "stdev",
+                "delta",
+                "lower",
+                "higher"
+        }));
+        printer.println(String.join(",", new String[]{
+                f.format(this.mean),
+                f.format(this.stdev),
+                f.format(this.delta),
+                f.format(this.lower),
+                f.format(this.higher)
+        }));
+        printer.println(String.join(",", new String[]{
+                "counts",
+                "midpoints",
+                "proportions",
+                "densities"
+        }));
+        for (int i = 0; i < this.k; i++)
+        {
+            printer.println(String.join(",", new String[]{
+                    f.format(this.counts[i]),
+                    f.format(this.midpoints[i]),
+                    f.format(this.proportions[i]),
+                    f.format(this.densities[i])
+            }));
+        }
     }
 }
