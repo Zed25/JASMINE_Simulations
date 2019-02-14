@@ -22,7 +22,12 @@ public class Cdh implements CSVPrintable{
 
     public Cdh(List<Double> values) {
         int n = values.size();
-        int k = (int)((Math.floor(Math.log(n) / Math.log(2)) + Math.floor(Math.sqrt(n))) / 2); //log(n) < k < sqrt(n)
+        //int k = (int)((Math.floor(Math.log(n) / Math.log(2)) + Math.floor(Math.sqrt(n))) / 2); //log2(n) < k < sqrt(n)
+        //int k = (int)Math.ceil(Math.sqrt(n)); //Square-root choice
+        //int k = (int)(Math.ceil(Math.log(n) / Math.log(2)) + 1); //Sturges' formula
+        //int k = (int)(Math.floor(2 * Math.pow(n, 1./3))); //Rice Rule
+        int k = (int)(Math.floor(5./3 * Math.pow(n, 1./3))); //Rice Rule 2
+
         double max = Collections.max(values);
         double min = Collections.min(values);
         this.fit(values, min, max, k);
@@ -43,10 +48,10 @@ public class Cdh implements CSVPrintable{
         }
 
         for (Double x : values) {
-            if ((x > min) && (x < max)) {
+            if ((x >= min) && (x < max)) {
                 int j = (int) ((x - min) / delta);
                 this.counts[j]++;
-            } else if (x <= min)
+            } else if (x < min)
                 this.lower++;
             else
                 this.higher++;
