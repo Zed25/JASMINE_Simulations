@@ -22,18 +22,18 @@ import java.util.List;
 public class Simulator {
 
     private final double START = 0.0;               /* initial (open the door) */
-    private final double STOP = 2000000.0;           /* terminal (close the door) time */
+    private final double STOP = Configuration.STOP;           /* terminal (close the door) time */
     private final double INFINITY = 100 * STOP;       /* infinity, much bigger than STOP */
 
     /* INPUT VARIABLES */
-    private final int N = 20;                       /* cloudlet threshold (cloudlet servers number) */
-    private final double lambda1 = 6.0;             /* CLASS1 arrival rate */
-    private final double lambda2 = 6.25;            /* CLASS2 arrival rate */
-    private final double mu1Cloudlet = 0.45;        /* cloudlet CLASS1 service rate */
-    private final double mu2Cloudlet = 0.27;        /* cloudlet CLASS2 service rate */
-    private final double mu1Cloud = 0.25;           /* cloud CLASS1 service rate */
-    private final double mu2Cloud = 0.22;           /* cloud CLASS2 service rate */
-    private final double hyperexpProb = 0.2;        /* Hyperexponential probability */
+    private final int N = Configuration.N;                       /* cloudlet threshold (cloudlet servers number) */
+    private final double lambda1 = Configuration.LAMBDA_1;             /* CLASS1 arrival rate */
+    private final double lambda2 = Configuration.LAMBDA_2;            /* CLASS2 arrival rate */
+    private final double mu1Cloudlet = Configuration.MU_1_CLET;        /* cloudlet CLASS1 service rate */
+    private final double mu2Cloudlet = Configuration.MU_2_CLET;        /* cloudlet CLASS2 service rate */
+    private final double mu1Cloud = Configuration.MU_1_CLOUD;           /* cloud CLASS1 service rate */
+    private final double mu2Cloud = Configuration.MU_2_CLOUD;           /* cloud CLASS2 service rate */
+    private final double hyperexpProb = Configuration.HYPEREXP_PROB;        /* Hyperexponential probability */
 
 
     private double arrival[] = {START, START};      /* init arrival time for CLASS1 <- arrival[0] and CLASS2 <- arrival[1]*/
@@ -47,7 +47,7 @@ public class Simulator {
     /* BATCH MEANS */
     long eventCounter = 1;                    /* event processed in batch counter,
                                                if eventCounter mod(batchSize - 1) == 0 -> reset batch statistics */
-    long batchSize = 100000;                  /* number of event processed in a batch */
+    long batchSize = Configuration.BATCH_SIZE;                  /* number of event processed in a batch */
 
     /** -----------------------------------------------------------------
      * generate the next arrival value, it must be added to current time
@@ -71,28 +71,42 @@ public class Simulator {
      * ------------------------------------------------------------------------------------------------
      */
     public double getServiceCloudlet(ClassType classType) {
-        double randomVal;
-        switch (classType){
-            case CLASS1: /* get CLASS1 next hyperexponential value */
-                rvgs.rngs.selectStream(3);
-                randomVal = rvgs.rngs.random();
-                rvgs.rngs.selectStream(4);
-                if (randomVal <= hyperexpProb) {
-                    return rvgs.exponential(1/(2 * hyperexpProb * mu1Cloudlet));
-                } else {
-                    return rvgs.exponential(1/(2 * (1-hyperexpProb) * mu1Cloudlet));
-                }
-            case CLASS2:                                    /* get CLASS2 next hyperexponential value */
-                rvgs.rngs.selectStream(5);
-                randomVal = rvgs.rngs.random();
-                rvgs.rngs.selectStream(6);
-                if (randomVal <= hyperexpProb) {
-                    return rvgs.exponential(2* hyperexpProb * mu2Cloudlet);
-                } else {
-                    return rvgs.exponential(2 * (1-hyperexpProb) * mu2Cloudlet);
-                }
-            default:                                        /* error, return 0.0 */
-                return 0.0;
+        if (Configuration.CLOUDLET_HYPEREXP_SERVICE) {
+            double randomVal;
+            switch (classType) {
+                case CLASS1:                                    /* get CLASS1 next hyperexponential value */
+                    rvgs.rngs.selectStream(3);
+                    randomVal = rvgs.rngs.random();
+                    rvgs.rngs.selectStream(4);
+                    if (randomVal <= hyperexpProb) {
+                        return rvgs.exponential(1 / (2 * hyperexpProb * mu1Cloudlet));
+                    } else {
+                        return rvgs.exponential(1 / (2 * (1 - hyperexpProb) * mu1Cloudlet));
+                    }
+                case CLASS2:                                    /* get CLASS2 next hyperexponential value */
+                    rvgs.rngs.selectStream(5);
+                    randomVal = rvgs.rngs.random();
+                    rvgs.rngs.selectStream(6);
+                    if (randomVal <= hyperexpProb) {
+                        return rvgs.exponential(1 / (2 * hyperexpProb * mu2Cloudlet));
+                    } else {
+                        return rvgs.exponential(1 / (2 * (1 - hyperexpProb) * mu2Cloudlet));
+                    }
+                default:                                        /* error, return 0.0 */
+                    return 0.0;
+            }
+        }else {
+            switch (classType) {
+                case CLASS1:                                    /* get CLASS1 next exponential value */
+                    rvgs.rngs.selectStream(4);
+                        return rvgs.exponential(1 / mu1Cloudlet);
+                case CLASS2:                                    /* get CLASS2 next exponential value */
+                    rvgs.rngs.selectStream(6);
+                        return rvgs.exponential(1/ mu2Cloudlet);
+
+                default:                                        /* error, return 0.0 */
+                    return 0.0;
+            }
         }
     }
 
@@ -184,9 +198,11 @@ public class Simulator {
             }
             batchStatistics.updateStatistics(systemState, t); /* update batch base statistics before set t.currentTime to t.next */
 
-            stationaryStatistics.updateStatistics(systemState, t); /* update stationary statistics */
-            if (stationaryStatistics.getBaseStatistics().getProcessedSystemJobsNumber() > 0) {
-                stationaryStatistics.updateAggregateStatistics();
+            if (Configuration.EXEC_STATIONARY_STATISTICS) {
+                stationaryStatistics.updateStatistics(systemState, t); /* update stationary statistics */
+                if (stationaryStatistics.getBaseStatistics().getProcessedSystemJobsNumber() > 0) {
+                    stationaryStatistics.updateAggregateStatistics();
+                }
             }
             eventCounter++;                               /* update job counter */
 
@@ -302,6 +318,78 @@ public class Simulator {
                     + decimalFourZero.format(batchClass2Thr[0] - batchClass2Thr[1]) + " , "
                     + decimalFourZero.format(batchClass2Thr[0] + batchClass2Thr[1]) + "]\n");
 
+            System.out.println("\n-------------------------------------------------------------");
+            System.out.println("\t\t\t\t\t\tA.3.2");
+            System.out.println("-------------------------------------------------------------\n");
+            System.out.println("Class 1 Cloudlet Effective Throughput " + (Configuration.LOC * 100) + "% Confidence Interval");
+            System.out.println(decimalFourZero.format(batchCletEffClass1Thr[0]) + " ± " + decimalFourZero.format(batchCletEffClass1Thr[1]) +
+                    " ----> ["
+                    + decimalFourZero.format(batchCletEffClass1Thr[0] - batchCletEffClass1Thr[1]) + " , "
+                    + decimalFourZero.format(batchCletEffClass1Thr[0] + batchCletEffClass1Thr[1]) + "]\n");
+            System.out.println("Class 2 Cloudlet Effective Throughput " + (Configuration.LOC * 100) + "% Confidence Interval");
+            System.out.println(decimalFourZero.format(batchCletEffClass2Thr[0]) + " ± " + decimalFourZero.format(batchCletEffClass2Thr[1]) +
+                    " ----> ["
+                    + decimalFourZero.format(batchCletEffClass2Thr[0] - batchCletEffClass2Thr[1]) + " , "
+                    + decimalFourZero.format(batchCletEffClass2Thr[0] + batchCletEffClass2Thr[1]) + "]\n");
+
+
+            System.out.println("\n-------------------------------------------------------------");
+            System.out.println("\t\t\t\t\t\tA.3.3");
+            System.out.println("-------------------------------------------------------------\n");
+            System.out.println("Class 1 Cloud Throughput " + (Configuration.LOC * 100) + "% Confidence Interval");
+            System.out.println(decimalFourZero.format(batchCloudClass1Thr[0]) + " ± " + decimalFourZero.format(batchCloudClass1Thr[1]) +
+                    " ----> ["
+                    + decimalFourZero.format(batchCloudClass1Thr[0] - batchCloudClass1Thr[1]) + " , "
+                    + decimalFourZero.format(batchCloudClass1Thr[0] + batchCloudClass1Thr[1]) + "]\n");
+            System.out.println("Class 2 Cloud Throughput " + (Configuration.LOC * 100) + "% Confidence Interval");
+            System.out.println(decimalFourZero.format(batchCloudClass2Thr[0]) + " ± " + decimalFourZero.format(batchCloudClass2Thr[1]) +
+                    " ----> ["
+                    + decimalFourZero.format(batchCloudClass2Thr[0] - batchCloudClass2Thr[1]) + " , "
+                    + decimalFourZero.format(batchCloudClass2Thr[0] + batchCloudClass2Thr[1]) + "]\n");
+
+            System.out.println("\n-------------------------------------------------------------");
+            System.out.println("\t\t\t\t\t\tA.3.4");
+            System.out.println("-------------------------------------------------------------\n");
+            System.out.println("Class 1 Cloudlet Response Time " + (Configuration.LOC * 100) + "% Confidence Interval");
+            System.out.println(decimalFourZero.format(batchCletClass1RespTime[0]) + " ± " + decimalFourZero.format(batchCletClass1RespTime[1]) +
+                    " ----> ["
+                    + decimalFourZero.format(batchCletClass1RespTime[0] - batchCletClass1RespTime[1]) + " , "
+                    + decimalFourZero.format(batchCletClass1RespTime[0] + batchCletClass1RespTime[1]) + "]\n");
+            System.out.println("Class 2 Cloudlet Response Time " + (Configuration.LOC * 100) + "% Confidence Interval");
+            System.out.println(decimalFourZero.format(batchCletClass2RespTime[0]) + " ± " + decimalFourZero.format(batchCletClass2RespTime[1]) +
+                    " ----> ["
+                    + decimalFourZero.format(batchCletClass2RespTime[0] - batchCletClass2RespTime[1]) + " , "
+                    + decimalFourZero.format(batchCletClass2RespTime[0] + batchCletClass2RespTime[1]) + "]\n");
+            System.out.println("Class 1 Cloud Response Time " + (Configuration.LOC * 100) + "% Confidence Interval");
+            System.out.println(decimalFourZero.format(batchCloudClass1RespTime[0]) + " ± " + decimalFourZero.format(batchCloudClass1RespTime[1]) +
+                    " ----> ["
+                    + decimalFourZero.format(batchCloudClass1RespTime[0] - batchCloudClass1RespTime[1]) + " , "
+                    + decimalFourZero.format(batchCloudClass1RespTime[0] + batchCloudClass1RespTime[1]) + "]\n");
+            System.out.println("Class 2 Cloud Response Time " + (Configuration.LOC * 100) + "% Confidence Interval");
+            System.out.println(decimalFourZero.format(batchCloudClass2RespTime[0]) + " ± " + decimalFourZero.format(batchCloudClass2RespTime[1]) +
+                    " ----> ["
+                    + decimalFourZero.format(batchCloudClass2RespTime[0] - batchCloudClass2RespTime[1]) + " , "
+                    + decimalFourZero.format(batchCloudClass2RespTime[0] + batchCloudClass2RespTime[1]) + "]\n");
+            System.out.println("Class 1 Cloudlet Mean Population " + (Configuration.LOC * 100) + "% Confidence Interval");
+            System.out.println(decimalFourZero.format(batchCloudletClass1MeanPop[0]) + " ± " + decimalFourZero.format(batchCloudletClass1MeanPop[1]) +
+                    " ----> ["
+                    + decimalFourZero.format(batchCloudletClass1MeanPop[0] - batchCloudletClass1MeanPop[1]) + " , "
+                    + decimalFourZero.format(batchCloudletClass1MeanPop[0] + batchCloudletClass1MeanPop[1]) + "]\n");
+            System.out.println("Class 2 Cloudlet Mean Population " + (Configuration.LOC * 100) + "% Confidence Interval");
+            System.out.println(decimalFourZero.format(batchCloudletClass2MeanPop[0]) + " ± " + decimalFourZero.format(batchCloudletClass2MeanPop[1]) +
+                    " ----> ["
+                    + decimalFourZero.format(batchCloudletClass2MeanPop[0] - batchCloudletClass2MeanPop[1]) + " , "
+                    + decimalFourZero.format(batchCloudletClass2MeanPop[0] + batchCloudletClass2MeanPop[1]) + "]\n");
+            System.out.println("Class 1 Cloud Mean Population " + (Configuration.LOC * 100) + "% Confidence Interval");
+            System.out.println(decimalFourZero.format(batchCloudClass1MeanPop[0]) + " ± " + decimalFourZero.format(batchCloudClass1MeanPop[1]) +
+                    " ----> ["
+                    + decimalFourZero.format(batchCloudClass1MeanPop[0] - batchCloudClass1MeanPop[1]) + " , "
+                    + decimalFourZero.format(batchCloudClass1MeanPop[0] + batchCloudClass1MeanPop[1]) + "]\n");
+            System.out.println("Class 2 Cloud Mean Population " + (Configuration.LOC * 100) + "% Confidence Interval");
+            System.out.println(decimalFourZero.format(batchCloudClass2MeanPop[0]) + " ± " + decimalFourZero.format(batchCloudClass2MeanPop[1]) +
+                    " ----> ["
+                    + decimalFourZero.format(batchCloudClass2MeanPop[0] - batchCloudClass2MeanPop[1]) + " , "
+                    + decimalFourZero.format(batchCloudClass2MeanPop[0] + batchCloudClass2MeanPop[1]) + "]\n");
         }
 
     }
@@ -593,7 +681,6 @@ public class Simulator {
     }
 
     private double[] computeMeanAndConfidenceWidth(List<Double> batchStatistics) {
-        long start = System.currentTimeMillis();
         /* Welford's algorithm mean and standard deviation computation */
         int n = 0;                                                              /* n = 0 */
         double mean = 0.0;                                                      /* x = 0.0 */
@@ -616,9 +703,6 @@ public class Simulator {
             double w = tStudent * stDev / Math.sqrt(n - 1);                     /* interval half width */
             return new double[]{mean, w};                                       /* return mean and interval half width */
         }
-
-        long finish = System.currentTimeMillis();
-        System.out.println((finish - start)/60000);
 
         return new double[]{0,0};                                               /* empty batch statistics default values */
 
