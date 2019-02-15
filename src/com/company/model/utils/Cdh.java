@@ -7,7 +7,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-public class Cdh implements CSVPrintable{
+public class Cdh implements CSVPrintable {
     private double mean = 0; /* histogram mean */
     private double stdev = 0; /* histogram stdev */
     private double delta = 0; /* histogram bins width */
@@ -26,7 +26,7 @@ public class Cdh implements CSVPrintable{
         //int k = (int)Math.ceil(Math.sqrt(n)); //Square-root choice
         //int k = (int)(Math.ceil(Math.log(n) / Math.log(2)) + 1); //Sturges' formula
         //int k = (int)(Math.floor(2 * Math.pow(n, 1./3))); //Rice Rule
-        int k = (int)(Math.floor(5./3 * Math.pow(n, 1./3))); //Rice Rule 2
+        int k = (int) (Math.floor(5. / 3 * Math.pow(n, 1. / 3))); //Rice Rule 2
 
         double max = Collections.max(values);
         double min = Collections.min(values);
@@ -133,8 +133,7 @@ public class Cdh implements CSVPrintable{
                 "proportions",
                 "densities"
         }));
-        for (int i = 0; i < this.k; i++)
-        {
+        for (int i = 0; i < this.k; i++) {
             printer.println(String.join(",", new String[]{
                     f.format(this.counts[i]),
                     f.format(this.midpoints[i]),

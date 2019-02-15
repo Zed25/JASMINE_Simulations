@@ -7,6 +7,7 @@ import com.company.model.utils.CSVPrintable;
 import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.util.Arrays;
+
 public class BaseStatistics implements Statistics, CSVPrintable {
     /* BASE STATISTICS */
     private double systemArea;              /* mean job number in system */
@@ -20,6 +21,10 @@ public class BaseStatistics implements Statistics, CSVPrintable {
     private double n2Area;                  /* mean n2 job number */
 
     private double currentTime;             /* this statistics current time */
+
+    private long interruptedN2Jobs;                       /* number of class 2 jobs interrupted */
+    private double interruptedN2JobsServiceTimeOnClet;      /* class 2 job time spent on cloudlet */
+    private double interruptedN2JobsServiceTimeOnCloud;     /* class 2 job time spent on cloud (setup time + cloud service time) */
 
     private long processedN1JobsClet;
     private long processedN2JobsClet;
@@ -39,6 +44,10 @@ public class BaseStatistics implements Statistics, CSVPrintable {
         this.n2Area = 0.0;
 
         this.currentTime = 0.0;
+
+        this.interruptedN2Jobs = 0;
+        this.interruptedN2JobsServiceTimeOnClet = 0.0;
+        this.interruptedN2JobsServiceTimeOnCloud = 0.0;
 
         this.processedN1JobsClet = 0;
         this.processedN2JobsClet = 0;
@@ -62,6 +71,18 @@ public class BaseStatistics implements Statistics, CSVPrintable {
 
             this.currentTime += deltaT;
         }
+    }
+
+    public void incrementInterruptedN2Jobs() {
+        this.interruptedN2Jobs++;
+    }
+
+    public void incrementInterruptedN2JobsServiceTimeOnClet(double timeToAdd) {
+        this.interruptedN2JobsServiceTimeOnClet += timeToAdd;
+    }
+
+    public void incrementInterruptedN2JobsServiceTimeOnCloud(double timeToAdd) {
+        this.interruptedN2JobsServiceTimeOnCloud += timeToAdd;
     }
 
     public void incrementProcJobsN1Clet() {
@@ -149,9 +170,25 @@ public class BaseStatistics implements Statistics, CSVPrintable {
         return this.processedN2JobsClet + this.processedN2JobsCloud;
     }
 
-    public long getProcessedCletJobsNumber() {return this.processedN1JobsClet + this.processedN2JobsClet; }
+    public long getProcessedCletJobsNumber() {
+        return this.processedN1JobsClet + this.processedN2JobsClet;
+    }
 
-    public long getProcessedCloudJobsNumber() {return this.processedN1JobsCloud + this.processedN2JobsCloud; }
+    public long getProcessedCloudJobsNumber() {
+        return this.processedN1JobsCloud + this.processedN2JobsCloud;
+    }
+
+    public long getInterruptedN2Jobs() {
+        return interruptedN2Jobs;
+    }
+
+    public double getInterruptedN2JobsServiceTimeOnClet() {
+        return interruptedN2JobsServiceTimeOnClet;
+    }
+
+    public double getInterruptedN2JobsServiceTimeOnCloud() {
+        return interruptedN2JobsServiceTimeOnCloud;
+    }
 
     @Override
     public void writeToCSV(PrintWriter printer) {

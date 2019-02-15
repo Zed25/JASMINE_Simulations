@@ -28,7 +28,10 @@ public class Controller {
     private final double mu1Cloud = Configuration.MU_1_CLOUD;           /* cloud CLASS1 service rate */
     private final double mu2Cloud = Configuration.MU_2_CLOUD;           /* cloud CLASS2 service rate */
 
+    private final double setupTime = Configuration.SETUP_TIME;          /* cloud interrupted job setup time */
+
     private final int N = Configuration.N;                              /* cloudlet threshold (cloudlet servers number) */
+    private final int S = Configuration.S;                              /* algorithm 2 cloudlet threshold */
 
     Rngs rngs;
     Rvgs rvgs;
@@ -54,30 +57,44 @@ public class Controller {
         rngs.plantSeeds(seed);          /* plan seeds */
     }
 
-    /** ----------------------------------------------------------------------------------------------------------------
-     *  ---------------------------------------------- PUBLIC METHODS  -------------------------------------------------
-     *  ----------------------------------------------------------------------------------------------------------------
-     *  */
+    /**
+     * ----------------------------------------------------------------------------------------------------------------
+     * ---------------------------------------------- PUBLIC METHODS  -------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------
+     */
 
     public void processEvent(NextEventInfo nextEventInfo, SystemState systemState,
                              Time t, double[] arrival, double stopTime, BatchStatistics batchStatistics, StationaryStatistics stationaryStatistics) {
         if (nextEventInfo.getIndex() == 0 &&
                 nextEventInfo.getLocation() == EventLocation.CLOUDLET) {  /* process cloudlet arrival*/
-            if (Configuration.EXECUTE_ALGORITHM_1) {
+
+            if (Configuration.EXECUTION_ALGORITHM == Configuration.Algorithms.ALGORITHM_1) {
+
                 this.execAlgorithm1(cloudletEvents, cloudEvents, systemState, t, arrival, stopTime);  /* exec algorithm 1 */
-            } else {
-                //this.execAlgorithm2(cloudletEvents, cloudEvents, systemState, t);  /* exec algorithm 1 */
+
+            } else if (Configuration.EXECUTION_ALGORITHM == Configuration.Algorithms.ALGORITHM_2) {
+
+                this.execAlgorithm2(cloudletEvents, cloudEvents, systemState, t, arrival, stopTime,
+                        batchStatistics.getLastBatchStatistics(), stationaryStatistics.getBaseStatistics());  /* exec algorithm 1 */
+
             }
-        }
-        else if (nextEventInfo.getIndex() != 0
+            this.computeNextArrival(arrival, stopTime, cloudletEvents); /* compute next arrival */
+
+        } else if (nextEventInfo.getIndex() != 0
                 && nextEventInfo.getLocation() == EventLocation.CLOUDLET) { /* process cloudlet departure */
-            this.processCloudletDeparture(nextEventInfo.getIndex(), cloudletEvents, systemState, batchStatistics.getLastBatchStatistics(), stationaryStatistics.getBaseStatistics());
+
+            this.processCloudletDeparture(nextEventInfo.getIndex(), cloudletEvents, systemState,
+                    batchStatistics.getLastBatchStatistics(), stationaryStatistics.getBaseStatistics());
         } else { /* process cloud departure */
-            this.processCloudDeparture(nextEventInfo.getIndex(), cloudEvents, systemState, batchStatistics.getLastBatchStatistics(), stationaryStatistics.getBaseStatistics());
+
+            this.processCloudDeparture(nextEventInfo.getIndex(), cloudEvents, systemState, t,
+                    batchStatistics.getLastBatchStatistics(), stationaryStatistics.getBaseStatistics());
+
         }
     }
 
-    /** --------------------
+    /**
+     * --------------------
      * compute next arrival
      * ---------------------
      */
@@ -97,10 +114,11 @@ public class Controller {
         }
     }
 
-    /** ----------------------------------------------------------------------------------------------------------------
-     *  ----------------------------------------------   ALGORITHM 1   -------------------------------------------------
-     *  ----------------------------------------------------------------------------------------------------------------
-     *  */
+    /**
+     * ----------------------------------------------------------------------------------------------------------------
+     * ----------------------------------------------   ALGORITHM 1   -------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------
+     */
     private void execAlgorithm1(CloudletEvent[] cloudletEvents,
                                 List<CloudEvent> cloudEvents, SystemState systemState, Time time, double[] arrival, double stopTime) {
         if ((systemState.getN1Clet() + systemState.getN2Clet()) == N) {     /* check (n1 + n2 = N)*/
@@ -108,9 +126,55 @@ public class Controller {
         } else {
             this.acceptJobToCloudlet(cloudletEvents, systemState, time, arrival);    /* accept job on cloudlet */
         }
-        computeNextArrival(arrival, stopTime, cloudletEvents);                                 /* compute next job arrival */
     }
 
+    /**
+     * ----------------------------------------------------------------------------------------------------------------
+     * ----------------------------------------------   ALGORITHM 2   -------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------
+     */
+    private void execAlgorithm2(CloudletEvent[] cloudletEvents,
+                                List<CloudEvent> cloudEvents, SystemState systemState,
+                                Time time, double[] arrival, double stopTime,
+                                BaseStatistics batchStatistics,
+                                BaseStatistics stationaryStatistics) {
+        switch (cloudletEvents[0].getClassType()) {
+            case CLASS1:
+                if (systemState.getN1Clet() == N) {                                                     /* check n1 == N */
+                    this.acceptJobToCloud(cloudletEvents[0], cloudEvents, systemState, time, arrival);  /* accept job on cloud */
+                } else if (systemState.getN1Clet() + systemState.getN2Clet() < S) {                      /* check (n1 + n2) < S */
+                    this.acceptJobToCloudlet(cloudletEvents, systemState, time, arrival);               /* accept job on cloudlet */
+                } else if (systemState.getN2Clet() > 0) {                                             /* check n2 > 0 */
+                                                                                                        /* send 1 class 2 job to
+                                                                                                        cloud and accept class 1 job*/
+                    this.interruptClass2JobAndAcceptOnCloudlet(cloudletEvents, cloudEvents, systemState,
+                            time, arrival, batchStatistics, stationaryStatistics);
+                } else {
+                    this.acceptJobToCloudlet(cloudletEvents, systemState, time, arrival);               /* otherwise accept job on cloudlet */
+                }
+                break;
+            case CLASS2:
+                if (systemState.getN1Clet() + systemState.getN2Clet() >= S) {                            /* check (n1 + n2) >= S */
+                    this.acceptJobToCloud(cloudletEvents[0], cloudEvents, systemState, time, arrival);  /* send job to cloud*/
+                } else {
+                    this.acceptJobToCloudlet(cloudletEvents, systemState, time, arrival);               /* accept job on cloudlet */
+                }
+                break;
+            case NONE:
+                break;                                                          /* error, don't process this arrival */
+        }
+    }
+
+
+    private void interruptClass2JobAndAcceptOnCloudlet(CloudletEvent[] cloudletEvents, List<CloudEvent> cloudEvents,
+                                                       SystemState systemState, Time time, double[] arrival, BaseStatistics batchStatistics, BaseStatistics stationaryStatistics) {
+        /* interrupt class 2 job on cloudlet */
+        this.interruptClass2JobOnCloudlet(cloudletEvents, systemState, time, batchStatistics, stationaryStatistics);
+        /* send job to cloud */
+        this.acceptInterruptedJobOnCloud(cloudEvents, systemState, time.getCurrent());
+        /* accept class 1 job on cloudlet, according to utilization balance policy, so choose longest idle server */
+        this.acceptJobToCloudlet(cloudletEvents, systemState, time, arrival);
+    }
 
     /** ----------------------------------------------------------------------------------------------------------------
      *  ------------------------------------------------   CLOUDLET   --------------------------------------------------
@@ -121,7 +185,8 @@ public class Controller {
      *  accept job to cloudlet
      *
      *  */
-    /** ----------------------
+    /**
+     * ----------------------
      * accept job to cloudlet
      * -----------------------
      */
@@ -134,22 +199,25 @@ public class Controller {
         }
     }
 
-    /** ----------------------
+    /**
+     * ----------------------
      * process CLASS1 arrival
      * -----------------------
      */
     private void processClass1Arrival(CloudletEvent[] cloudletEvents,
                                       SystemState systemState, Time time, double[] arrival) {
         systemState.incrementN1Clet();                                      /* increment n1 cloudlet state variable */
-        arrival[0] += getArrival(ClassType.CLASS1);                    /* compute next arrival of CLASS1 */
+        arrival[0] += getArrival(ClassType.CLASS1);                         /* compute next arrival of CLASS1 */
         int s = findCloudletIdleServer(cloudletEvents);                     /* find longest idle server */
         double service = getServiceCloudlet(ClassType.CLASS1);              /* compute service time */
         cloudletEvents[s].setNextEventTime(time.getCurrent() + service);    /* set job departure time */
         cloudletEvents[s].setEventStatus(EventStatus.ACTIVE);               /* set event active */
         cloudletEvents[s].setClassType(ClassType.CLASS1);                   /* set event class 1 */
+        cloudletEvents[s].setArrivalTime(time.getCurrent());                /* set arrival time to current time (for algorithm 2)*/
     }
 
-    /** ----------------------
+    /**
+     * ----------------------
      * process CLASS2 arrival
      * -----------------------
      */
@@ -162,9 +230,11 @@ public class Controller {
         cloudletEvents[s].setNextEventTime(time.getCurrent() + service);    /* set job departure time */
         cloudletEvents[s].setEventStatus(EventStatus.ACTIVE);               /* set event active */
         cloudletEvents[s].setClassType(ClassType.CLASS2);                   /* set event class 2 */
+        cloudletEvents[s].setArrivalTime(time.getCurrent());                /* set arrival time to current time (for algorithm 2)*/
     }
 
-    /** --------------------------
+    /**
+     * --------------------------
      * process cloudlet departure
      * ---------------------------
      */
@@ -186,7 +256,8 @@ public class Controller {
         cloudletEvents[eventIndex].setEventStatus(EventStatus.NOT_ACTIVE);
     }
 
-    /** --------------------------------------------------------------
+    /**
+     * --------------------------------------------------------------
      * return the index of the available cloudlet server idle longest
      * ---------------------------------------------------------------
      */
@@ -209,12 +280,56 @@ public class Controller {
         return s;
     }
 
+    /**
+     * -------------------
+     * interrupt job on cloudlet server. Choose the one which has minimum age time
+     * --------------------
+     */
+    private void interruptClass2JobOnCloudlet(CloudletEvent[] cloudletEvents, SystemState systemState, Time t,
+                                              BaseStatistics batchStatistics, BaseStatistics stationaryStatistics) {
+        int serverIndex = 0;                                                    /* chosen server index */
+        double maxArrivalTime = -1;                                             /* min arrival time */
+        for (int i = 0; i < cloudletEvents.length; i++) {
+            /* get server active with a class 2 job */
+            if (cloudletEvents[i].getClassType() == ClassType.CLASS2 &&
+                    cloudletEvents[i].getEventStatus() == EventStatus.ACTIVE) {
+                if (maxArrivalTime < cloudletEvents[i].getArrivalTime()) { /* check if arrival time is grater
+                                                                              than one already chosen.
+                                                                              If it is grater, age is lower  */
+                    serverIndex = i;                                        /* update server and min arrival time */
+                    maxArrivalTime = cloudletEvents[i].getArrivalTime();
+                }
+            }
+        }
+
+        /* interrupt server */
+        cloudletEvents[serverIndex].setClassType(ClassType.NONE);
+        cloudletEvents[serverIndex].setEventStatus(EventStatus.NOT_ACTIVE);
+
+        /* set server next event time to current time in order to indicate that this server has worked until now */
+        cloudletEvents[serverIndex].setNextEventTime(t.getCurrent());
+
+        /* update system state */
+        systemState.decrementN2Clet();
+
+        /*update statistics connected */
+        batchStatistics.incrementInterruptedN2JobsServiceTimeOnClet(
+                t.getCurrent() - cloudletEvents[serverIndex].getArrivalTime()
+        );
+        batchStatistics.incrementInterruptedN2Jobs();
+        stationaryStatistics.incrementInterruptedN2JobsServiceTimeOnClet(
+                t.getCurrent() - cloudletEvents[serverIndex].getArrivalTime()
+        );
+        stationaryStatistics.incrementInterruptedN2Jobs();
+    }
+
     /** ----------------------------------------------------------------------------------------------------------------
      *  --------------------------------------------------   CLOUD   ---------------------------------------------------
      *  ----------------------------------------------------------------------------------------------------------------
      *  */
 
-    /** -------------------
+    /**
+     * -------------------
      * accept job to cloud
      * --------------------
      */
@@ -243,12 +358,33 @@ public class Controller {
         if (service != -1.0) {                                              /* if it's all ok, schedule job */
             cloudEvents.get(s).setNextEventTime(time.getCurrent() + service);
             cloudEvents.get(s).setEventStatus(EventStatus.ACTIVE);
+            cloudEvents.get(s).setArrivalTime(time.getCurrent());           /* set arrival time to current time (for algorithm 2)*/
         } else {                                                            /* else, disable server and go on*/
             cloudEvents.get(s).setEventStatus(EventStatus.NOT_ACTIVE);
         }
     }
 
-    /** -----------------------------------------------------------
+    /**
+     * -------------------
+     * accept interrupted job to cloud
+     * --------------------
+     */
+    private void acceptInterruptedJobOnCloud(List<CloudEvent> cloudEvents, SystemState systemState, double currentTime) {
+        int s = findCloudIdleServer(cloudEvents);                           /* find the longest idle server on cloud */
+
+        systemState.incrementN2Cloud();                                     /* increment cloud CLASS2 state */
+        double service = getInterruptedJobSetupTime();                      /* compute setup time */
+        service += getServiceCloud(ClassType.CLASS2);                       /* compute and add cloud CLASS2 service time */
+
+        cloudEvents.get(s).setClassType(ClassType.CLASS2);                  /* set job of CLASS2 */
+        cloudEvents.get(s).setNextEventTime(currentTime + service);         /* set next event time */
+        cloudEvents.get(s).setEventStatus(EventStatus.ACTIVE);              /* set server as ACTIVE */
+        cloudEvents.get(s).setInterrupdetJob(true);                         /* set cloud event is about an interrupted job */
+        cloudEvents.get(s).setArrivalTime(currentTime);                     /* set arrival time */
+    }
+
+    /**
+     * -----------------------------------------------------------
      * return the index of the available cloud server idle longest
      * ------------------------------------------------------------
      */
@@ -264,28 +400,40 @@ public class Controller {
         return cloudEvents.size() - 1;                                              /* return it */
     }
 
-    /** -----------------------
+    /**
+     * -----------------------
      * process cloud departure
      * ------------------------
      */
-    private void processCloudDeparture(int eventIndex, List<CloudEvent> cloudEvents, SystemState systemState, BaseStatistics baseStatistics, BaseStatistics stationaryStatistics) {
+    private void processCloudDeparture(int eventIndex, List<CloudEvent> cloudEvents, SystemState systemState, Time t, BaseStatistics batchStatistics, BaseStatistics stationaryStatistics) {
         if (cloudEvents.get(eventIndex).getClassType() == ClassType.CLASS1) {           /* process cloud
                                                                                            class1 departure */
             systemState.decrementN1Cloud();                                             /* decrement cloud
                                                                                            class1 state */
-            baseStatistics.incrementProcJobsN1Cloud();
+            batchStatistics.incrementProcJobsN1Cloud();
             stationaryStatistics.incrementProcJobsN1Cloud();
         } else if (cloudEvents.get(eventIndex).getClassType() == ClassType.CLASS2) {    /* process cloud
                                                                                            class2 departure */
             systemState.decrementN2Cloud();                                             /* decrement cloud
                                                                                            class2 state */
-            baseStatistics.incrementProcJobsN2Cloud();
+            batchStatistics.incrementProcJobsN2Cloud();
             stationaryStatistics.incrementProcJobsN2Cloud();
+
+            if (cloudEvents.get(eventIndex).isInterrupdetJob()) {
+                batchStatistics.incrementInterruptedN2JobsServiceTimeOnCloud(
+                        t.getCurrent() - cloudEvents.get(eventIndex).getArrivalTime()
+                );
+                stationaryStatistics.incrementInterruptedN2JobsServiceTimeOnCloud(
+                        t.getCurrent() - cloudEvents.get(eventIndex).getArrivalTime()
+                );
+            }
         }
 
         /* set server idle */
         cloudEvents.get(eventIndex).setClassType(ClassType.NONE);
         cloudEvents.get(eventIndex).setEventStatus(EventStatus.NOT_ACTIVE);
+        cloudEvents.get(eventIndex).setInterrupdetJob(false);                           /* reset interrupted
+                                                                                           flag to default value */
     }
 
     /** ----------------------------------------------------------------------------------------------------------------
@@ -293,7 +441,8 @@ public class Controller {
      *  ----------------------------------------------------------------------------------------------------------------
      *  */
 
-    /** -----------------------------------------------------------------
+    /**
+     * -----------------------------------------------------------------
      * generate the next arrival value, it must be added to current time
      * ------------------------------------------------------------------
      */
@@ -301,17 +450,18 @@ public class Controller {
         switch (classType) {
             case CLASS1:                                    /* get CLASS1 next exponential value */
                 rvgs.rngs.selectStream(0);
-                return rvgs.exponential(1/lambda1);
+                return rvgs.exponential(1 / lambda1);
             case CLASS2:                                    /* get CLASS2 next exponential value */
                 rvgs.rngs.selectStream(1);
-                return rvgs.exponential(1/lambda2);
+                return rvgs.exponential(1 / lambda2);
             default:                                        /* error, return 0.0 */
                 return 0.0;
         }
     }
 
-    /** -----------------------------------------------------------------------------------------------
-     * generate cloudlet the next service time, it must be added to current time to get departure time
+    /**
+     * -----------------------------------------------------------------------------------------------
+     * generate cloudlet next service time, it must be added to current time to get departure time
      * ------------------------------------------------------------------------------------------------
      */
     public double getServiceCloudlet(ClassType classType) {
@@ -339,14 +489,14 @@ public class Controller {
                 default:                                        /* error, return 0.0 */
                     return 0.0;
             }
-        }else {
+        } else {
             switch (classType) {
                 case CLASS1:                                    /* get CLASS1 next exponential value */
                     rvgs.rngs.selectStream(4);
                     return rvgs.exponential(1 / mu1Cloudlet);
                 case CLASS2:                                    /* get CLASS2 next exponential value */
                     rvgs.rngs.selectStream(6);
-                    return rvgs.exponential(1/ mu2Cloudlet);
+                    return rvgs.exponential(1 / mu2Cloudlet);
 
                 default:                                        /* error, return 0.0 */
                     return 0.0;
@@ -355,21 +505,33 @@ public class Controller {
     }
 
 
-    /** --------------------------------------------------------------------------------------------
-     * generate cloud the next service time, it must be added to current time to get departure time
+    /**
+     * --------------------------------------------------------------------------------------------
+     * generate cloud next service time, it must be added to current time to get departure time
      * ---------------------------------------------------------------------------------------------
      */
     public double getServiceCloud(ClassType classType) {
         switch (classType) {
             case CLASS1:                                    /* get CLASS1 next exponential value */
                 rvgs.rngs.selectStream(7);
-                return rvgs.exponential(1/mu1Cloud);
+                return rvgs.exponential(1 / mu1Cloud);
             case CLASS2:                                    /* get CLASS2 next exponential value */
                 rvgs.rngs.selectStream(8);
-                return rvgs.exponential(1/mu2Cloud);
+                return rvgs.exponential(1 / mu2Cloud);
             default:                                        /* error, return 0.0 */
                 return 0.0;
         }
+    }
+
+    /**
+     * --------------------------------------------------------------------------------------------
+     * generate cloud interrupted job setup time, it must be added to current time to get departure time.
+     * It would be called only for class 2 job.
+     * ---------------------------------------------------------------------------------------------
+     */
+    private double getInterruptedJobSetupTime() {
+        rvgs.rngs.selectStream(9);
+        return rvgs.exponential(setupTime);
     }
 
     public CloudletEvent[] getCloudletEvents() {

@@ -7,6 +7,7 @@ public abstract class Event {
     protected double nextEventTime; /* next event time */
     protected EventStatus eventStatus; /* event status, ACTIVE, NOT_ACTIVE */
     protected ClassType classType; /* job class type, CLASS1, CLASS2, NONE */
+    protected double arrivalTime; /* time which job joined the system*/
 
     public double getNextEventTime() {
         return nextEventTime;
@@ -30,5 +31,13 @@ public abstract class Event {
 
     public void setClassType(ClassType classType) {
         this.classType = classType;
+    }
+
+    public double getArrivalTime() {
+        return arrivalTime;
+    }
+
+    public void setArrivalTime(double arrivalTime) {
+        this.arrivalTime = arrivalTime;
     }
 }

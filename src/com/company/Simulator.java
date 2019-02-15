@@ -3,25 +3,15 @@ package com.company;
 import com.company.configuration.Configuration;
 import com.company.model.SystemState;
 import com.company.model.Time;
-import com.company.model.event.CloudEvent;
 import com.company.model.event.NextEventInfo;
 import com.company.model.event.enumeration.ClassType;
-import com.company.model.event.CloudletEvent;
 import com.company.model.event.enumeration.EventLocation;
 import com.company.model.event.enumeration.EventStatus;
-import com.company.model.statistics.BaseStatistics;
 import com.company.model.statistics.BatchStatistics;
 import com.company.model.statistics.StationaryStatistics;
 import com.company.model.statistics.utils.StatisticsUtils;
 import com.company.model.system.Controller;
 import com.company.model.utils.SimulatorUtils;
-import com.company.model.utils.Cdh;
-
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Simulator {
 
@@ -46,19 +36,21 @@ public class Simulator {
                                                if eventCounter mod(batchSize - 1) == 0 -> reset batch statistics */
     long batchSize = Configuration.BATCH_SIZE;                  /* number of event processed in a batch */
 
-    /** ----------------------------------------------------------------------------------------------------------------
-     *  --------------------------------------------------   MAIN   ----------------------------------------------------
-     *  ----------------------------------------------------------------------------------------------------------------
-     *  */
+    /**
+     * ----------------------------------------------------------------------------------------------------------------
+     * --------------------------------------------------   MAIN   ----------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------
+     */
     public static void main(String[] args) {
-	    Simulator simulator = new Simulator();
-	    simulator.simulate();
+        Simulator simulator = new Simulator();
+        simulator.simulate();
     }
 
-    /** ----------------------------------------------------------------------------------------------------------------
-     *  ----------------------------------------------   SIMULATION   --------------------------------------------------
-     *  ----------------------------------------------------------------------------------------------------------------
-     *  */
+    /**
+     * ----------------------------------------------------------------------------------------------------------------
+     * ----------------------------------------------   SIMULATION   --------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------
+     */
     private void simulate() {
 
         NextEventInfo nextEventInfo;            /* next event info :

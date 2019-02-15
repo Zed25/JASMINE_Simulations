@@ -29,11 +29,11 @@ public class StatisticsUtils {
             double sample = batchStatistics.get(i);                             /* x = GetData(); */
             n++;                                                                /* n++; */
             double d = sample - mean;                                           /* d = x - mean; */
-            v += d * d * (n - 1)/n;                                             /* v = v + (d * d * (n - 1)/n);*/
-            mean += d/n;                                                        /* mean = mean + d/n;  */
+            v += d * d * (n - 1) / n;                                             /* v = v + (d * d * (n - 1)/n);*/
+            mean += d / n;                                                        /* mean = mean + d/n;  */
             i++;                                                                /* step iterator */
         }
-        double stDev = Math.sqrt(v/n);                                          /* s = sqrt(v/n); */
+        double stDev = Math.sqrt(v / n);                                          /* s = sqrt(v/n); */
 
         if (n > 1) {
             double u = 1.0 - 0.5 * (1.0 - Configuration.LOC);                   /* interval parameter  */
@@ -42,11 +42,12 @@ public class StatisticsUtils {
             return new double[]{mean, w};                                       /* return mean and interval half width */
         }
 
-        return new double[]{0,0};                                               /* empty batch statistics default values */
+        return new double[]{0, 0};                                               /* empty batch statistics default values */
 
     }
 
-    /** -------------------------------------------------------------------------------------------------------------
+    /**
+     * -------------------------------------------------------------------------------------------------------------
      * ---------------------------------------- PRINT STATISTICS ---------------------------------------------------
      * -------------------------------------------------------------------------------------------------------------
      */
@@ -66,7 +67,7 @@ public class StatisticsUtils {
         if (Configuration.EXEC_BATCH_MEANS) {
             DecimalFormat decimalFourZero = new DecimalFormat("###0.0000");
 
-            if(Configuration.EXECUTE_CDH) {
+            if (Configuration.EXECUTE_CDH) {
                 /* CDH */
                 /* ------------------------------------------- (A.3.1) ----------------------------------------------------- */
                 Cdh batchSystemRespTimeCdh = new Cdh(batchStatistics.getSystemRespTime());
@@ -117,7 +118,7 @@ public class StatisticsUtils {
                 batchCloudClass2MeanPopCdh.writeToCSVFile("./outputs/batchCloudClass2MeanPopCdh.csv");
             }
 
-            /* ------------------------------------------- (A.3.1) ----------------------------------------------------- */
+            /* --------------------------------------- (A.3.1 / C.3.1) ------------------------------------------------- */
             double[] batchSystemRespTime = this.computeMeanAndConfidenceWidth(batchStatistics.getSystemRespTime());
             double[] batchClass1RespTime = this.computeMeanAndConfidenceWidth(batchStatistics.getClass1RespTime());
             double[] batchClass2RespTime = this.computeMeanAndConfidenceWidth(batchStatistics.getClass2RespTime());
@@ -125,15 +126,15 @@ public class StatisticsUtils {
             double[] batchClass1Thr = this.computeMeanAndConfidenceWidth(batchStatistics.getClass1Thr());
             double[] batchClass2Thr = this.computeMeanAndConfidenceWidth(batchStatistics.getClass2Thr());
 
-            /* ------------------------------------------- (A.3.2) ----------------------------------------------------- */
+            /* --------------------------------------- (A.3.2 / C.3.2) ------------------------------------------------- */
             double[] batchCletEffClass1Thr = this.computeMeanAndConfidenceWidth(batchStatistics.getCloudletEffectiveClass1Thr());
             double[] batchCletEffClass2Thr = this.computeMeanAndConfidenceWidth(batchStatistics.getCloudletEffectiveClass2Thr());
 
-            /* ------------------------------------------- (A.3.3) ----------------------------------------------------- */
+            /* --------------------------------------- (A.3.3 / C.3.3) ------------------------------------------------- */
             double[] batchCloudClass1Thr = this.computeMeanAndConfidenceWidth(batchStatistics.getCloudClass1Thr());
             double[] batchCloudClass2Thr = this.computeMeanAndConfidenceWidth(batchStatistics.getCloudClass2Thr());
 
-            /* ------------------------------------------- (A.3.4) ----------------------------------------------------- */
+            /* --------------------------------------- (A.3.4 / C.3.4) ------------------------------------------------- */
             double[] batchCletClass1RespTime = this.computeMeanAndConfidenceWidth(batchStatistics.getClass1CletRespTime());
             double[] batchCletClass2RespTime = this.computeMeanAndConfidenceWidth(batchStatistics.getClass2CletRespTime());
             double[] batchCloudClass1RespTime = this.computeMeanAndConfidenceWidth(batchStatistics.getClass1CloudRespTime());
@@ -143,8 +144,12 @@ public class StatisticsUtils {
             double[] batchCloudClass1MeanPop = this.computeMeanAndConfidenceWidth(batchStatistics.getClass1CloudMeanPop());
             double[] batchCloudClass2MeanPop = this.computeMeanAndConfidenceWidth(batchStatistics.getClass2CloudMeanPop());
 
+            /* ------------------------------------------- (C.3.6) ----------------------------------------------------- */
+            double[] batchClass2InterruptedPercentage = this.computeMeanAndConfidenceWidth(batchStatistics.getClass2InterruptedPercentage());
+            double[] batchClass2InterruptedRespTime = this.computeMeanAndConfidenceWidth(batchStatistics.getClass2InterruptedRespTime());
+
             System.out.println("\n-------------------------------------------------------------");
-            System.out.println("\t\t\t\t\t\tA.3.1");
+            System.out.println("\t\t\t\t\t\tA.3.1 / C.2.1");
             System.out.println("-------------------------------------------------------------\n");
             System.out.println("System Response Time " + (Configuration.LOC * 100) + "% Confidence Interval");
             System.out.println(decimalFourZero.format(batchSystemRespTime[0]) + " ± " + decimalFourZero.format(batchSystemRespTime[1]) +
@@ -178,7 +183,7 @@ public class StatisticsUtils {
                     + decimalFourZero.format(batchClass2Thr[0] + batchClass2Thr[1]) + "]\n");
 
             System.out.println("\n-------------------------------------------------------------");
-            System.out.println("\t\t\t\t\t\tA.3.2");
+            System.out.println("\t\t\t\t\t\tA.3.2 / C.2.2");
             System.out.println("-------------------------------------------------------------\n");
             System.out.println("Class 1 Cloudlet Effective Throughput " + (Configuration.LOC * 100) + "% Confidence Interval");
             System.out.println(decimalFourZero.format(batchCletEffClass1Thr[0]) + " ± " + decimalFourZero.format(batchCletEffClass1Thr[1]) +
@@ -193,7 +198,7 @@ public class StatisticsUtils {
 
 
             System.out.println("\n-------------------------------------------------------------");
-            System.out.println("\t\t\t\t\t\tA.3.3");
+            System.out.println("\t\t\t\t\t\tA.3.3 / C.2.3");
             System.out.println("-------------------------------------------------------------\n");
             System.out.println("Class 1 Cloud Throughput " + (Configuration.LOC * 100) + "% Confidence Interval");
             System.out.println(decimalFourZero.format(batchCloudClass1Thr[0]) + " ± " + decimalFourZero.format(batchCloudClass1Thr[1]) +
@@ -207,7 +212,7 @@ public class StatisticsUtils {
                     + decimalFourZero.format(batchCloudClass2Thr[0] + batchCloudClass2Thr[1]) + "]\n");
 
             System.out.println("\n-------------------------------------------------------------");
-            System.out.println("\t\t\t\t\t\tA.3.4");
+            System.out.println("\t\t\t\t\t\tA.3.4 / C.2.4");
             System.out.println("-------------------------------------------------------------\n");
             System.out.println("Class 1 Cloudlet Response Time " + (Configuration.LOC * 100) + "% Confidence Interval");
             System.out.println(decimalFourZero.format(batchCletClass1RespTime[0]) + " ± " + decimalFourZero.format(batchCletClass1RespTime[1]) +
@@ -249,6 +254,26 @@ public class StatisticsUtils {
                     " ----> ["
                     + decimalFourZero.format(batchCloudClass2MeanPop[0] - batchCloudClass2MeanPop[1]) + " , "
                     + decimalFourZero.format(batchCloudClass2MeanPop[0] + batchCloudClass2MeanPop[1]) + "]\n");
+
+            System.out.println("\n-------------------------------------------------------------");
+            System.out.println("\t\t\t\t\t\tC.2.6");
+            System.out.println("-------------------------------------------------------------\n");
+            System.out.println("Class 2 Interrupted Percentage " + (Configuration.LOC * 100) + "% Confidence Interval");
+            System.out.println(decimalFourZero.format(batchClass2InterruptedPercentage[0]) + " ± " + decimalFourZero.format(batchClass2InterruptedPercentage[1]) +
+                    " ----> ["
+                    + decimalFourZero.format(batchClass2InterruptedPercentage[0] - batchClass2InterruptedPercentage[1]) + " , "
+                    + decimalFourZero.format(batchClass2InterruptedPercentage[0] + batchClass2InterruptedPercentage[1]) + "] ======> "
+                    + decimalFourZero.format(batchClass2InterruptedPercentage[0] * 100) + "% ± "
+                    + decimalFourZero.format(batchClass2InterruptedPercentage[1] * 100) +
+                    "% ----> ["
+                    + decimalFourZero.format((batchClass2InterruptedPercentage[0] - batchClass2InterruptedPercentage[1]) * 100)
+                    + "% , "
+                    + decimalFourZero.format((batchClass2InterruptedPercentage[0] + batchClass2InterruptedPercentage[1]) * 100) + "%]\n");
+            System.out.println("Class 2 Interrupted Response Time " + (Configuration.LOC * 100) + "% Confidence Interval");
+            System.out.println(decimalFourZero.format(batchClass2InterruptedRespTime[0]) + " ± " + decimalFourZero.format(batchClass2InterruptedRespTime[1]) +
+                    " ----> ["
+                    + decimalFourZero.format(batchClass2InterruptedRespTime[0] - batchClass2InterruptedRespTime[1]) + " , "
+                    + decimalFourZero.format(batchClass2InterruptedRespTime[0] + batchClass2InterruptedRespTime[1]) + "]\n");
         }
     }
 }

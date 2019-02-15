@@ -57,66 +57,66 @@ public class StationaryStatistics implements AggregateStatistics, CSVPrintable {
          *      8. cloudlet reponse time
          *      9. cloud response time
          * */
-        if (baseStatistics.getProcessedSystemJobsNumber() > 0){
+        if (baseStatistics.getProcessedSystemJobsNumber() > 0) {
             this.systemResponseTime.add(new TimeValueStatistics(
-                    baseStatistics.getCurrentTime(),
-                    baseStatistics.getSystemArea()/(double)baseStatistics.getProcessedSystemJobsNumber()
+                            baseStatistics.getCurrentTime(),
+                            baseStatistics.getSystemArea() / (double) baseStatistics.getProcessedSystemJobsNumber()
                     )
             );
         }
         if (baseStatistics.getProcessedN1JobsNumber() > 0) {
             this.class1RespTime.add(new TimeValueStatistics(
-                    baseStatistics.getCurrentTime(),
-                    baseStatistics.getN1Area()/(double)baseStatistics.getProcessedN1JobsNumber()
+                            baseStatistics.getCurrentTime(),
+                            baseStatistics.getN1Area() / (double) baseStatistics.getProcessedN1JobsNumber()
                     )
             );
         }
         if (baseStatistics.getProcessedN2JobsNumber() > 0) {
             this.class2RespTime.add(new TimeValueStatistics(
-                    baseStatistics.getCurrentTime(),
-                    baseStatistics.getN2Area()/(double)baseStatistics.getProcessedN2JobsNumber()
+                            baseStatistics.getCurrentTime(),
+                            baseStatistics.getN2Area() / (double) baseStatistics.getProcessedN2JobsNumber()
                     )
             );
         }
         if (baseStatistics.getProcessedN1JobsClet() > 0) {
             this.cloudletClass1RespTime.add(new TimeValueStatistics(
-                    baseStatistics.getCurrentTime(),
-                    baseStatistics.getN1CletArea()/(double)baseStatistics.getProcessedN1JobsClet()
+                            baseStatistics.getCurrentTime(),
+                            baseStatistics.getN1CletArea() / (double) baseStatistics.getProcessedN1JobsClet()
                     )
             );
         }
         if (baseStatistics.getProcessedN2JobsClet() > 0) {
             this.cloudletClass2RespTime.add(new TimeValueStatistics(
-                    baseStatistics.getCurrentTime(),
-                    baseStatistics.getN2CletArea()/(double)baseStatistics.getProcessedN2JobsClet()
+                            baseStatistics.getCurrentTime(),
+                            baseStatistics.getN2CletArea() / (double) baseStatistics.getProcessedN2JobsClet()
                     )
             );
         }
         if (baseStatistics.getProcessedN1JobsCloud() > 0) {
             this.cloudClass1RespTime.add(new TimeValueStatistics(
-                    baseStatistics.getCurrentTime(),
-                    baseStatistics.getN1CloudArea()/(double)baseStatistics.getProcessedN1JobsCloud()
+                            baseStatistics.getCurrentTime(),
+                            baseStatistics.getN1CloudArea() / (double) baseStatistics.getProcessedN1JobsCloud()
                     )
             );
         }
         if (baseStatistics.getProcessedN2JobsCloud() > 0) {
             this.cloudClass2RespTime.add(new TimeValueStatistics(
-                    baseStatistics.getCurrentTime(),
-                    baseStatistics.getN2CloudArea()/(double)baseStatistics.getProcessedN2JobsCloud()
+                            baseStatistics.getCurrentTime(),
+                            baseStatistics.getN2CloudArea() / (double) baseStatistics.getProcessedN2JobsCloud()
                     )
             );
         }
-        if (baseStatistics.getProcessedCletJobsNumber() > 0){
+        if (baseStatistics.getProcessedCletJobsNumber() > 0) {
             this.cloudletRespTime.add(new TimeValueStatistics(
-                    baseStatistics.getCurrentTime(),
-                    baseStatistics.getCloudletArea()/(double) baseStatistics.getProcessedCletJobsNumber()
+                            baseStatistics.getCurrentTime(),
+                            baseStatistics.getCloudletArea() / (double) baseStatistics.getProcessedCletJobsNumber()
                     )
             );
         }
-        if (baseStatistics.getProcessedCloudJobsNumber() > 0){
+        if (baseStatistics.getProcessedCloudJobsNumber() > 0) {
             this.cloudRespTime.add(new TimeValueStatistics(
-                    baseStatistics.getCurrentTime(),
-                    baseStatistics.getCloudletArea()/(double) baseStatistics.getProcessedCloudJobsNumber()
+                            baseStatistics.getCurrentTime(),
+                            baseStatistics.getCloudletArea() / (double) baseStatistics.getProcessedCloudJobsNumber()
                     )
             );
         }
@@ -131,42 +131,42 @@ public class StationaryStatistics implements AggregateStatistics, CSVPrintable {
             printer.print(f.format(systemResponseTime.get(i).getTime()) + "," + f.format(systemResponseTime.get(i).getValue()));
             if (i < cloudletRespTime.size()) {
                 printer.print("," + f.format(cloudletRespTime.get(i).getTime()) + "," + f.format(cloudletRespTime.get(i).getValue()));
-            }else {
+            } else {
                 printer.print(",,");
             }
             if (i < cloudRespTime.size()) {
                 printer.print("," + f.format(cloudRespTime.get(i).getTime()) + "," + f.format(cloudRespTime.get(i).getValue()));
-            }else {
+            } else {
                 printer.print(",,");
             }
             if (i < class1RespTime.size()) {
                 printer.print("," + f.format(class1RespTime.get(i).getTime()) + "," + f.format(class1RespTime.get(i).getValue()));
-            }else {
+            } else {
                 printer.print(",,");
             }
             if (i < class2RespTime.size()) {
                 printer.print("," + f.format(class2RespTime.get(i).getTime()) + "," + f.format(class2RespTime.get(i).getValue()));
-            }else {
+            } else {
                 printer.print(",,");
             }
             if (i < cloudletClass1RespTime.size()) {
                 printer.print("," + f.format(cloudletClass1RespTime.get(i).getTime()) + "," + f.format(cloudletClass1RespTime.get(i).getValue()));
-            }else {
+            } else {
                 printer.print(",,");
             }
             if (i < cloudletClass2RespTime.size()) {
                 printer.print("," + f.format(cloudletClass2RespTime.get(i).getTime()) + "," + f.format(cloudletClass2RespTime.get(i).getValue()));
-            }else {
+            } else {
                 printer.print(",,");
             }
             if (i < cloudClass1RespTime.size()) {
                 printer.print("," + f.format(cloudClass1RespTime.get(i).getTime()) + "," + f.format(cloudClass1RespTime.get(i).getValue()));
-            }else {
+            } else {
                 printer.print(",,");
             }
             if (i < cloudClass2RespTime.size()) {
                 printer.print("," + f.format(cloudClass2RespTime.get(i).getTime()) + "," + f.format(cloudClass2RespTime.get(i).getValue()));
-            }else {
+            } else {
                 printer.print(",,");
             }
             printer.print("\n");

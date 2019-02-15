@@ -10,12 +10,15 @@ public class CloudletEvent extends Event {
         this.nextEventTime = -1.0;
         this.eventStatus = EventStatus.NOT_ACTIVE;
         this.classType = ClassType.NONE;
+        this.arrivalTime = -1;
     }
 
     /* real event constructor */
-    public CloudletEvent(double nextEventTime, EventStatus eventStatus, ClassType classType) {
+    public CloudletEvent(double nextEventTime, EventStatus eventStatus, ClassType classType, double arrivalTime) {
         this.nextEventTime = nextEventTime;
         this.eventStatus = eventStatus;
         this.classType = classType;
+        this.arrivalTime = arrivalTime;
     }
+
 }
