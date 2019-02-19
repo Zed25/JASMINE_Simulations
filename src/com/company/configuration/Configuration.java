@@ -1,6 +1,7 @@
 package com.company.configuration;
 
 public class Configuration {
+
     public enum Algorithms {
         ALGORITHM_1, ALGORITHM_2
     }
@@ -10,15 +11,17 @@ public class Configuration {
     public static final Algorithms EXECUTION_ALGORITHM = Algorithms.ALGORITHM_2;     /* controller algorithm */
     public static final boolean EXECUTE_CDH = false;
 
-    public static final long SEED = 45678;
+    public static final boolean PRINT_OTHER_STATISTICS = true;
+
+    public static final long SEED = 12345;
 
     public static final double LOC = 0.95;                      /* level of confidence. 0.95 equals 95% */
 
     /* ENVIRONMENT */
     public static final boolean CLOUDLET_HYPEREXP_SERVICE = false;
-    public static final double STOP = 2000000.0;
+    public static final double STOP = 4000000.0;
     public static final int N = 20;
-    public static final int S = 10;
+    public static final int S = 20;
     public static final double LAMBDA_1 = 6.0;                  /* CLASS1 arrival rate */
     public static final double LAMBDA_2 = 6.25;                 /* CLASS2 arrival rate */
     public static final double MU_1_CLET = 0.45;                /* cloudlet CLASS1 service rate */
@@ -33,5 +36,6 @@ public class Configuration {
 
     /* OUTPUT PATHS */
     public static final String STATIONARY_STATISTICS_CSV_PATH = "./outputs/stationary_check_" + SEED + ".csv";
+    public static final String THRESHOLD_STATISTICS_FILE_PATH = "./outputs/threshold_statistics_" + SEED + ".csv";
 
 }

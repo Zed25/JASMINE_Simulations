@@ -127,6 +127,10 @@ public class StationaryStatistics implements AggregateStatistics, CSVPrintable {
         DecimalFormat f = new DecimalFormat("###0.0000000000000");
         int systemSize = systemResponseTime.size();
 
+        printer.print("Time,Mean Wait Time,Time,CloudletRespTime,Time,CloudRespTime,Time,Class1,Time,Class2," +
+                "Time,CloudletClass1RespTime,Time,CloudletClass2RespTime,Time,CloudClass1RespTime,Time,CloudClass2RespTime" +
+                "");
+
         for (int i = 0; i < systemSize; i++) {
             printer.print(f.format(systemResponseTime.get(i).getTime()) + "," + f.format(systemResponseTime.get(i).getValue()));
             if (i < cloudletRespTime.size()) {

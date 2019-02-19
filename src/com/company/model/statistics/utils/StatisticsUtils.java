@@ -2,16 +2,20 @@ package com.company.model.statistics.utils;
 
 import com.company.Rvms;
 import com.company.configuration.Configuration;
+import com.company.model.SystemState;
 import com.company.model.statistics.BatchStatistics;
 import com.company.model.statistics.StationaryStatistics;
+import com.company.model.utils.CSVPrintable;
 import com.company.model.utils.Cdh;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-public class StatisticsUtils {
+public class StatisticsUtils implements CSVPrintable {
     Rvms rvms;
 
     public StatisticsUtils() {
@@ -48,10 +52,29 @@ public class StatisticsUtils {
 
     /**
      * -------------------------------------------------------------------------------------------------------------
+     * ---------------------------------------- CSV WRITABLE ---------------------------------------------------
+     * -------------------------------------------------------------------------------------------------------------
+     */
+    @Override
+    public void writeToCSV(PrintWriter printer) {
+
+    }
+
+    /**
+     * -------------------------------------------------------------------------------------------------------------
      * ---------------------------------------- PRINT STATISTICS ---------------------------------------------------
      * -------------------------------------------------------------------------------------------------------------
      */
     public void printStatistics(StationaryStatistics stationaryStatistics, BatchStatistics batchStatistics) {
+
+        /* ------------------------------------ Other statistics ----------------------------------------------- */
+        if (Configuration.PRINT_OTHER_STATISTICS) {
+            System.out.println("\n-------------------------------------------------------------");
+            System.out.println("\t\t\t\t\t\tOther Statistics");
+            System.out.println("-------------------------------------------------------------\n");
+            System.out.println("Job processed system number " + stationaryStatistics.getBaseStatistics().getProcessedSystemJobsNumber());
+            System.out.println("Batch number " + batchStatistics.getBatchMeanStatistics().size());
+        }
 
 
         /* ------------------------------------ Stationary statistics ----------------------------------------------- */
@@ -65,7 +88,33 @@ public class StatisticsUtils {
 
         /* -------------------------------------- Batch Means and CDH ----------------------------------------------- */
         if (Configuration.EXEC_BATCH_MEANS) {
-            DecimalFormat decimalFourZero = new DecimalFormat("###0.0000");
+
+            /* Write csv header */
+            /*this.writeToCSV(Configuration.THRESHOLD_STATISTICS_FILE_PATH, new String[]{
+                    "S",
+                    "MRT", "±", "min", "max",
+                    "MRT Class 1", "±", "min", "max",
+                    "MRT Class 2", "±", "min", "max",
+                    "Thr Cloudlet Class 1", "±", "min", "max",
+                    "Thr Cloudlet Class 2", "±", "min", "max",
+                    "Thr Cloud Class 1", "±", "min", "max",
+                    "Thr Cloud Class 2", "±", "min", "max",
+                    "MRT Cloudlet Class 1", "±", "min", "max",
+                    "MRT Cloudlet Class 2", "±", "min", "max",
+                    "MRT Cloud Class 1", "±", "min", "max",
+                    "MRT Cloud Class 2", "±", "min", "max",
+                    "MP Cloudlet Class 1", "±", "min", "max",
+                    "MP Cloudlet Class 2", "±", "min", "max",
+                    "MP Cloud Class 1", "±", "min", "max",
+                    "MP Cloud Class 2", "±", "min", "max",
+                    "% Interrupted", "±", "min", "max",
+                    "MRT Interrupted", "±", "min", "max"
+            });*/
+
+            List<String> batchValues = new ArrayList<>();
+            batchValues.add(String.valueOf(Configuration.S));
+
+            DecimalFormat decimalFourZero = new DecimalFormat("###0.000000");
 
             if (Configuration.EXECUTE_CDH) {
                 /* CDH */
@@ -178,6 +227,22 @@ public class StatisticsUtils {
                     + decimalFourZero.format(batchClass2Thr[0] - batchClass2Thr[1]) + " , "
                     + decimalFourZero.format(batchClass2Thr[0] + batchClass2Thr[1]) + "]\n");
 
+            /* print to csv */
+            batchValues.add(decimalFourZero.format(batchSystemRespTime[0]));
+            batchValues.add(decimalFourZero.format(batchSystemRespTime[1]));
+            batchValues.add(decimalFourZero.format(batchSystemRespTime[0] - batchSystemRespTime[1]));
+            batchValues.add(decimalFourZero.format(batchSystemRespTime[0] + batchSystemRespTime[1]));
+            /* print to csv */
+            batchValues.add(decimalFourZero.format(batchClass1RespTime[0]));
+            batchValues.add(decimalFourZero.format(batchClass1RespTime[1]));
+            batchValues.add(decimalFourZero.format(batchClass1RespTime[0] - batchClass1RespTime[1]));
+            batchValues.add(decimalFourZero.format(batchClass1RespTime[0] + batchClass1RespTime[1]));
+            /* print to csv */
+            batchValues.add(decimalFourZero.format(batchClass2RespTime[0]));
+            batchValues.add(decimalFourZero.format(batchClass2RespTime[1]));
+            batchValues.add(decimalFourZero.format(batchClass2RespTime[0] - batchClass2RespTime[1]));
+            batchValues.add(decimalFourZero.format(batchClass2RespTime[0] + batchClass2RespTime[1]));
+
             System.out.println("\n-------------------------------------------------------------");
             System.out.println("\t\t\t\t\t\tA.3.2 / C.2.2");
             System.out.println("-------------------------------------------------------------\n");
@@ -192,6 +257,16 @@ public class StatisticsUtils {
                     + decimalFourZero.format(batchCletEffClass2Thr[0] - batchCletEffClass2Thr[1]) + " , "
                     + decimalFourZero.format(batchCletEffClass2Thr[0] + batchCletEffClass2Thr[1]) + "]\n");
 
+            /* print to csv */
+            batchValues.add(decimalFourZero.format(batchCletEffClass1Thr[0]));
+            batchValues.add(decimalFourZero.format(batchCletEffClass1Thr[1]));
+            batchValues.add(decimalFourZero.format(batchCletEffClass1Thr[0] - batchCletEffClass1Thr[1]));
+            batchValues.add(decimalFourZero.format(batchCletEffClass1Thr[0] + batchCletEffClass1Thr[1]));
+            /* print to csv */
+            batchValues.add(decimalFourZero.format(batchCletEffClass2Thr[0]));
+            batchValues.add(decimalFourZero.format(batchCletEffClass2Thr[1]));
+            batchValues.add(decimalFourZero.format(batchCletEffClass2Thr[0] - batchCletEffClass2Thr[1]));
+            batchValues.add(decimalFourZero.format(batchCletEffClass2Thr[0] + batchCletEffClass2Thr[1]));
 
             System.out.println("\n-------------------------------------------------------------");
             System.out.println("\t\t\t\t\t\tA.3.3 / C.2.3");
@@ -206,6 +281,17 @@ public class StatisticsUtils {
                     " ----> ["
                     + decimalFourZero.format(batchCloudClass2Thr[0] - batchCloudClass2Thr[1]) + " , "
                     + decimalFourZero.format(batchCloudClass2Thr[0] + batchCloudClass2Thr[1]) + "]\n");
+
+            /* print to csv */
+            batchValues.add(decimalFourZero.format(batchCloudClass1Thr[0]));
+            batchValues.add(decimalFourZero.format(batchCloudClass1Thr[1]));
+            batchValues.add(decimalFourZero.format(batchCloudClass1Thr[0] - batchCloudClass1Thr[1]));
+            batchValues.add(decimalFourZero.format(batchCloudClass1Thr[0] + batchCloudClass1Thr[1]));
+            /* print to csv */
+            batchValues.add(decimalFourZero.format(batchCloudClass2Thr[0]));
+            batchValues.add(decimalFourZero.format(batchCloudClass2Thr[1]));
+            batchValues.add(decimalFourZero.format(batchCloudClass2Thr[0] - batchCloudClass2Thr[1]));
+            batchValues.add(decimalFourZero.format(batchCloudClass2Thr[0] + batchCloudClass2Thr[1]));
 
             System.out.println("\n-------------------------------------------------------------");
             System.out.println("\t\t\t\t\t\tA.3.4 / C.2.4");
@@ -251,6 +337,48 @@ public class StatisticsUtils {
                     + decimalFourZero.format(batchCloudClass2MeanPop[0] - batchCloudClass2MeanPop[1]) + " , "
                     + decimalFourZero.format(batchCloudClass2MeanPop[0] + batchCloudClass2MeanPop[1]) + "]\n");
 
+            /* print to csv */
+            batchValues.add(decimalFourZero.format(batchCletClass1RespTime[0]));
+            batchValues.add(decimalFourZero.format(batchCletClass1RespTime[1]));
+            batchValues.add(decimalFourZero.format(batchCletClass1RespTime[0] - batchCletClass1RespTime[1]));
+            batchValues.add(decimalFourZero.format(batchCletClass1RespTime[0] + batchCletClass1RespTime[1]));
+            /* print to csv */
+            batchValues.add(decimalFourZero.format(batchCletClass2RespTime[0]));
+            batchValues.add(decimalFourZero.format(batchCletClass2RespTime[1]));
+            batchValues.add(decimalFourZero.format(batchCletClass2RespTime[0] - batchCletClass2RespTime[1]));
+            batchValues.add(decimalFourZero.format(batchCletClass2RespTime[0] + batchCletClass2RespTime[1]));
+            /* print to csv */
+            batchValues.add(decimalFourZero.format(batchCloudClass1RespTime[0]));
+            batchValues.add(decimalFourZero.format(batchCloudClass1RespTime[1]));
+            batchValues.add(decimalFourZero.format(batchCloudClass1RespTime[0] - batchCloudClass1RespTime[1]));
+            batchValues.add(decimalFourZero.format(batchCloudClass1RespTime[0] + batchCloudClass1RespTime[1]));
+            /* print to csv */
+            batchValues.add(decimalFourZero.format(batchCloudClass2RespTime[0]));
+            batchValues.add(decimalFourZero.format(batchCloudClass2RespTime[1]));
+            batchValues.add(decimalFourZero.format(batchCloudClass2RespTime[0] - batchCloudClass2RespTime[1]));
+            batchValues.add(decimalFourZero.format(batchCloudClass2RespTime[0] + batchCloudClass2RespTime[1]));
+            /* print to csv */
+            batchValues.add(decimalFourZero.format(batchCloudletClass1MeanPop[0]));
+            batchValues.add(decimalFourZero.format(batchCloudletClass1MeanPop[1]));
+            batchValues.add(decimalFourZero.format(batchCloudletClass1MeanPop[0] - batchCloudletClass1MeanPop[1]));
+            batchValues.add(decimalFourZero.format(batchCloudletClass1MeanPop[0] + batchCloudletClass1MeanPop[1]));
+            /* print to csv */
+            batchValues.add(decimalFourZero.format(batchCloudletClass2MeanPop[0]));
+            batchValues.add(decimalFourZero.format(batchCloudletClass2MeanPop[1]));
+            batchValues.add(decimalFourZero.format(batchCloudletClass2MeanPop[0] - batchCloudletClass2MeanPop[1]));
+            batchValues.add(decimalFourZero.format(batchCloudletClass2MeanPop[0] + batchCloudletClass2MeanPop[1]));
+            /* print to csv */
+            batchValues.add(decimalFourZero.format(batchCloudClass1MeanPop[0]));
+            batchValues.add(decimalFourZero.format(batchCloudClass1MeanPop[1]));
+            batchValues.add(decimalFourZero.format(batchCloudClass1MeanPop[0] - batchCloudClass1MeanPop[1]));
+            batchValues.add(decimalFourZero.format(batchCloudClass1MeanPop[0] + batchCloudClass1MeanPop[1]));
+            /* print to csv */
+            batchValues.add(decimalFourZero.format(batchCloudClass2MeanPop[0]));
+            batchValues.add(decimalFourZero.format(batchCloudClass2MeanPop[1]));
+            batchValues.add(decimalFourZero.format(batchCloudClass2MeanPop[0] - batchCloudClass2MeanPop[1]));
+            batchValues.add(decimalFourZero.format(batchCloudClass2MeanPop[0] + batchCloudClass2MeanPop[1]));
+
+
             /* ------------------------------------------- (C.3.6) ----------------------------------------------------- */
             if (Configuration.EXECUTION_ALGORITHM == Configuration.Algorithms.ALGORITHM_2) {
                 double[] batchClass2InterruptedPercentage = this.computeMeanAndConfidenceWidth(batchStatistics.getClass2InterruptedPercentage());
@@ -275,6 +403,28 @@ public class StatisticsUtils {
                         " ----> ["
                         + decimalFourZero.format(batchClass2InterruptedRespTime[0] - batchClass2InterruptedRespTime[1]) + " , "
                         + decimalFourZero.format(batchClass2InterruptedRespTime[0] + batchClass2InterruptedRespTime[1]) + "]\n");
+
+                /* print to csv */
+                batchValues.add(decimalFourZero.format(batchClass2InterruptedPercentage[0]));
+                batchValues.add(decimalFourZero.format(batchClass2InterruptedPercentage[1]));
+                batchValues.add(decimalFourZero.format(batchClass2InterruptedPercentage[0] - batchClass2InterruptedPercentage[1]));
+                batchValues.add(decimalFourZero.format(batchClass2InterruptedPercentage[0] + batchClass2InterruptedPercentage[1]));
+                /* print to csv */
+                batchValues.add(decimalFourZero.format(batchClass2InterruptedRespTime[0]));
+                batchValues.add(decimalFourZero.format(batchClass2InterruptedRespTime[1]));
+                batchValues.add(decimalFourZero.format(batchClass2InterruptedRespTime[0] - batchClass2InterruptedRespTime[1]));
+                batchValues.add(decimalFourZero.format(batchClass2InterruptedRespTime[0] + batchClass2InterruptedRespTime[1]));
+            } else {
+                /* print to csv */
+                batchValues.add("");
+                batchValues.add("");
+                batchValues.add("");
+                batchValues.add("");
+                /* print to csv */
+                batchValues.add("");
+                batchValues.add("");
+                batchValues.add("");
+                batchValues.add("");
             }
 
             /* ------------------------------------------- Hyperexp phases ----------------------------------------------------- */
@@ -332,6 +482,9 @@ public class StatisticsUtils {
                         + decimalFourZero.format(batchN2F2MeanPop[0] - batchN2F2MeanPop[1]) + " , "
                         + decimalFourZero.format(batchN2F2MeanPop[0] + batchN2F2MeanPop[1]) + "]\n");
             }
+
+            /* write results to CSV */
+            this.writeToCSV(Configuration.THRESHOLD_STATISTICS_FILE_PATH, batchValues.toArray(new String[0]));
         }
     }
 }

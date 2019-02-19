@@ -336,8 +336,9 @@ public class BatchStatistics implements BatchMeanStatistics, CSVPrintable {
                 "processedN2JobsCloud"
         };
         printer.println(String.join(",", Arrays.asList(headers)));
-        for (BaseStatistics baseStatistics : this.batchMeanStatistics)
+        for (BaseStatistics baseStatistics : this.batchMeanStatistics) {
             baseStatistics.writeToCSV(printer);
+        }
     }
 
     public List<Double> getSystemRespTime() {
