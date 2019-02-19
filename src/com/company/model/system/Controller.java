@@ -1,6 +1,7 @@
 package com.company.model.system;
 
 import com.company.configuration.Configuration;
+import com.company.model.HyperexpSystemState;
 import com.company.model.SystemState;
 import com.company.model.Time;
 import com.company.model.event.CloudEvent;
@@ -209,11 +210,16 @@ public class Controller {
         systemState.incrementN1Clet();                                      /* increment n1 cloudlet state variable */
         arrival[0] += getArrival(ClassType.CLASS1);                         /* compute next arrival of CLASS1 */
         int s = findCloudletIdleServer(cloudletEvents);                     /* find longest idle server */
-        double service = getServiceCloudlet(ClassType.CLASS1);              /* compute service time */
-        cloudletEvents[s].setNextEventTime(time.getCurrent() + service);    /* set job departure time */
+        double service[] = getServiceCloudlet(ClassType.CLASS1);            /* compute service time and phase info */
+        cloudletEvents[s].setNextEventTime(time.getCurrent() + service[1]); /* set job departure time */
         cloudletEvents[s].setEventStatus(EventStatus.ACTIVE);               /* set event active */
         cloudletEvents[s].setClassType(ClassType.CLASS1);                   /* set event class 1 */
         cloudletEvents[s].setArrivalTime(time.getCurrent());                /* set arrival time to current time (for algorithm 2)*/
+        cloudletEvents[s].setHyperexpPhase(service[0]);                     /* set phase type */
+
+        if (Configuration.CLOUDLET_HYPEREXP_SERVICE) {
+            ((HyperexpSystemState) systemState).incrementNF(cloudletEvents[s].getClassType(), cloudletEvents[s].getHyperexpPhase());
+        }
     }
 
     /**
@@ -224,13 +230,19 @@ public class Controller {
     private void processClass2Arrival(CloudletEvent[] cloudletEvents,
                                       SystemState systemState, Time time, double[] arrival) {
         systemState.incrementN2Clet();                                      /* increment n2 cloudlet state variable */
-        arrival[1] += getArrival(ClassType.CLASS2);                    /* compute next arrival of CLASS2 */
+        arrival[1] += getArrival(ClassType.CLASS2);                         /* compute next arrival of CLASS2 */
         int s = findCloudletIdleServer(cloudletEvents);                     /* find longest idle server */
-        double service = getServiceCloudlet(ClassType.CLASS2);              /* compute service time */
-        cloudletEvents[s].setNextEventTime(time.getCurrent() + service);    /* set job departure time */
+        double service[] = getServiceCloudlet(ClassType.CLASS2);            /* compute service time and phase info  */
+        cloudletEvents[s].setNextEventTime(time.getCurrent() + service[1]);    /* set job departure time */
         cloudletEvents[s].setEventStatus(EventStatus.ACTIVE);               /* set event active */
         cloudletEvents[s].setClassType(ClassType.CLASS2);                   /* set event class 2 */
         cloudletEvents[s].setArrivalTime(time.getCurrent());                /* set arrival time to current time (for algorithm 2)*/
+        cloudletEvents[s].setHyperexpPhase(service[0]);                     /* set phase type */
+
+        if (Configuration.CLOUDLET_HYPEREXP_SERVICE) {
+            ((HyperexpSystemState) systemState).incrementNF(cloudletEvents[s].getClassType(), cloudletEvents[s].getHyperexpPhase());
+        }
+
     }
 
     /**
@@ -251,9 +263,17 @@ public class Controller {
             stationaryStatistics.incrementProcJobsN2Clet();
         }
 
+        if (Configuration.CLOUDLET_HYPEREXP_SERVICE) {
+            ((HyperexpSystemState) systemState).decrementNF(event.getClassType(), event.getHyperexpPhase());
+        }
+
+        baseStatistics.incrementProcessedJobPerPhase(event.getClassType(), event.getHyperexpPhase());
+        stationaryStatistics.incrementProcessedJobPerPhase(event.getClassType(), event.getHyperexpPhase());
+
         /* set server idle */
         cloudletEvents[eventIndex].setClassType(ClassType.NONE);
         cloudletEvents[eventIndex].setEventStatus(EventStatus.NOT_ACTIVE);
+        cloudletEvents[eventIndex].setHyperexpPhase(0);
     }
 
     /**
@@ -379,7 +399,7 @@ public class Controller {
         cloudEvents.get(s).setClassType(ClassType.CLASS2);                  /* set job of CLASS2 */
         cloudEvents.get(s).setNextEventTime(currentTime + service);         /* set next event time */
         cloudEvents.get(s).setEventStatus(EventStatus.ACTIVE);              /* set server as ACTIVE */
-        cloudEvents.get(s).setInterrupdetJob(true);                         /* set cloud event is about an interrupted job */
+        cloudEvents.get(s).setInterruptedJob(true);                         /* set cloud event is about an interrupted job */
         cloudEvents.get(s).setArrivalTime(currentTime);                     /* set arrival time */
     }
 
@@ -419,7 +439,7 @@ public class Controller {
             batchStatistics.incrementProcJobsN2Cloud();
             stationaryStatistics.incrementProcJobsN2Cloud();
 
-            if (cloudEvents.get(eventIndex).isInterrupdetJob()) {
+            if (cloudEvents.get(eventIndex).isInterruptedJob()) {
                 batchStatistics.incrementInterruptedN2JobsServiceTimeOnCloud(
                         t.getCurrent() - cloudEvents.get(eventIndex).getArrivalTime()
                 );
@@ -432,7 +452,7 @@ public class Controller {
         /* set server idle */
         cloudEvents.get(eventIndex).setClassType(ClassType.NONE);
         cloudEvents.get(eventIndex).setEventStatus(EventStatus.NOT_ACTIVE);
-        cloudEvents.get(eventIndex).setInterrupdetJob(false);                           /* reset interrupted
+        cloudEvents.get(eventIndex).setInterruptedJob(false);                           /* reset interrupted
                                                                                            flag to default value */
     }
 
@@ -462,9 +482,13 @@ public class Controller {
     /**
      * -----------------------------------------------------------------------------------------------
      * generate cloudlet next service time, it must be added to current time to get departure time
+     * return {phase, serviceTime}
+     * if service is hyperexponential, phase is relevant else is 0
+     * phase -> 1 == PHASE_1
+     * phase -> 2 == PHASE_2
      * ------------------------------------------------------------------------------------------------
      */
-    public double getServiceCloudlet(ClassType classType) {
+    public double[] getServiceCloudlet(ClassType classType) {
         if (Configuration.CLOUDLET_HYPEREXP_SERVICE) {
             double randomVal;
             switch (classType) {
@@ -473,33 +497,33 @@ public class Controller {
                     randomVal = rvgs.rngs.random();
                     rvgs.rngs.selectStream(4);
                     if (randomVal <= hyperexpProb) {
-                        return rvgs.exponential(1 / (2 * hyperexpProb * mu1Cloudlet));
+                        return new double[]{1, rvgs.exponential(1 / (2 * hyperexpProb * mu1Cloudlet))};
                     } else {
-                        return rvgs.exponential(1 / (2 * (1 - hyperexpProb) * mu1Cloudlet));
+                        return new double[]{2, rvgs.exponential(1 / (2 * (1 - hyperexpProb) * mu1Cloudlet))};
                     }
                 case CLASS2:                                    /* get CLASS2 next hyperexponential value */
                     rvgs.rngs.selectStream(5);
                     randomVal = rvgs.rngs.random();
                     rvgs.rngs.selectStream(6);
                     if (randomVal <= hyperexpProb) {
-                        return rvgs.exponential(1 / (2 * hyperexpProb * mu2Cloudlet));
+                        return new double[]{1, rvgs.exponential(1 / (2 * hyperexpProb * mu2Cloudlet))};
                     } else {
-                        return rvgs.exponential(1 / (2 * (1 - hyperexpProb) * mu2Cloudlet));
+                        return new double[]{2, rvgs.exponential(1 / (2 * (1 - hyperexpProb) * mu2Cloudlet))};
                     }
                 default:                                        /* error, return 0.0 */
-                    return 0.0;
+                    return new double[]{0, 0.0};
             }
         } else {
             switch (classType) {
                 case CLASS1:                                    /* get CLASS1 next exponential value */
                     rvgs.rngs.selectStream(4);
-                    return rvgs.exponential(1 / mu1Cloudlet);
+                    return new double[]{0, rvgs.exponential(1 / mu1Cloudlet)};
                 case CLASS2:                                    /* get CLASS2 next exponential value */
                     rvgs.rngs.selectStream(6);
-                    return rvgs.exponential(1 / mu2Cloudlet);
+                    return new double[]{0, rvgs.exponential(1 / mu2Cloudlet)};
 
                 default:                                        /* error, return 0.0 */
-                    return 0.0;
+                    return new double[]{0, 0.0};
             }
         }
     }

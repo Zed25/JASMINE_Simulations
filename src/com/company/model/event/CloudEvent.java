@@ -2,10 +2,11 @@ package com.company.model.event;
 
 import com.company.model.event.enumeration.ClassType;
 import com.company.model.event.enumeration.EventStatus;
+import com.company.model.event.enumeration.HyperexpPhaseType;
 
 public class CloudEvent extends CloudletEvent {
 
-    boolean interrupdetJob = false; /* check if is an interrupted job event
+    boolean interruptedJob = false; /* check if is an interrupted job event
                                        default value is false */
 
     /* fake event constructor */
@@ -14,15 +15,15 @@ public class CloudEvent extends CloudletEvent {
     }
 
     /* real event constructor */
-    public CloudEvent(double nextEventTime, EventStatus eventStatus, ClassType classType, double arrivalTime) {
-        super(nextEventTime, eventStatus, classType, arrivalTime);
+    public CloudEvent(double nextEventTime, EventStatus eventStatus, ClassType classType, double arrivalTime, HyperexpPhaseType hyperexpPhaseType) {
+        super(nextEventTime, eventStatus, classType, arrivalTime, hyperexpPhaseType);
     }
 
-    public boolean isInterrupdetJob() {
-        return interrupdetJob;
+    public boolean isInterruptedJob() {
+        return interruptedJob;
     }
 
-    public void setInterrupdetJob(boolean interrupdetJob) {
-        this.interrupdetJob = interrupdetJob;
+    public void setInterruptedJob(boolean interruptedJob) {
+        this.interruptedJob = interruptedJob;
     }
 }

@@ -1,7 +1,11 @@
 package com.company.model.statistics;
 
+import com.company.configuration.Configuration;
+import com.company.model.HyperexpSystemState;
 import com.company.model.SystemState;
 import com.company.model.Time;
+import com.company.model.event.enumeration.ClassType;
+import com.company.model.event.enumeration.HyperexpPhaseType;
 import com.company.model.utils.CSVPrintable;
 
 import java.io.PrintWriter;
@@ -31,6 +35,17 @@ public class BaseStatistics implements Statistics, CSVPrintable {
     private long processedN1JobsCloud;
     private long processedN2JobsCloud;
 
+    /* HYPEREXP PHASES */
+    private double n1F1Area;
+    private double n1F2Area;
+    private double n2F1Area;
+    private double n2F2Area;
+
+    private long processedN1F1;
+    private long processedN1F2;
+    private long processedN2F1;
+    private long processedN2F2;
+
 
     public BaseStatistics() {
         this.systemArea = 0.0;
@@ -53,6 +68,16 @@ public class BaseStatistics implements Statistics, CSVPrintable {
         this.processedN2JobsClet = 0;
         this.processedN1JobsCloud = 0;
         this.processedN2JobsCloud = 0;
+
+        this.n1F1Area = 0.0;
+        this.n1F2Area = 0.0;
+        this.n2F1Area = 0.0;
+        this.n2F2Area = 0.0;
+
+        this.processedN1F1 = 0;
+        this.processedN1F2 = 0;
+        this.processedN2F1 = 0;
+        this.processedN2F2 = 0;
     }
 
     @Override
@@ -69,7 +94,34 @@ public class BaseStatistics implements Statistics, CSVPrintable {
             this.n1Area += deltaT * (systemState.getN1Clet() + systemState.getN1Cloud());
             this.n2Area += deltaT * (systemState.getN2Clet() + systemState.getN2Cloud());
 
+            if (Configuration.CLOUDLET_HYPEREXP_SERVICE) {
+                HyperexpSystemState hyperexpSystemState = (HyperexpSystemState) systemState;
+                this.n1F1Area += deltaT * hyperexpSystemState.getN1F1();
+                this.n1F2Area += deltaT * hyperexpSystemState.getN1F2();
+                this.n2F1Area += deltaT * hyperexpSystemState.getN2F1();
+                this.n2F2Area += deltaT * hyperexpSystemState.getN2F2();
+            }
+
             this.currentTime += deltaT;
+        }
+    }
+
+    public void incrementProcessedJobPerPhase(ClassType classType, HyperexpPhaseType phaseType) {
+        switch (classType) {
+            case CLASS1:
+                if (phaseType == HyperexpPhaseType.PHASE_1) {
+                    this.incrementProcessedN1F1();
+                } else if (phaseType == HyperexpPhaseType.PHASE_2) {
+                    this.incrementProcessedN1F2();
+                }
+                break;
+            case CLASS2:
+                if (phaseType == HyperexpPhaseType.PHASE_1) {
+                    this.incrementProcessedN2F1();
+                } else if (phaseType == HyperexpPhaseType.PHASE_2) {
+                    this.incrementProcessedN2F2();
+                }
+                break;
         }
     }
 
@@ -99,6 +151,22 @@ public class BaseStatistics implements Statistics, CSVPrintable {
 
     public void incrementProcJobsN2Cloud() {
         this.processedN2JobsCloud++;
+    }
+
+    public void incrementProcessedN1F1() {
+        this.processedN1F1++;
+    }
+
+    public void incrementProcessedN1F2() {
+        this.processedN1F2++;
+    }
+
+    public void incrementProcessedN2F1() {
+        this.processedN2F1++;
+    }
+
+    public void incrementProcessedN2F2() {
+        this.processedN2F2++;
     }
 
     public double getSystemArea() {
@@ -176,6 +244,38 @@ public class BaseStatistics implements Statistics, CSVPrintable {
 
     public long getProcessedCloudJobsNumber() {
         return this.processedN1JobsCloud + this.processedN2JobsCloud;
+    }
+
+    public long getProcessedN1F1() {
+        return processedN1F1;
+    }
+
+    public long getProcessedN1F2() {
+        return processedN1F2;
+    }
+
+    public long getProcessedN2F1() {
+        return processedN2F1;
+    }
+
+    public long getProcessedN2F2() {
+        return processedN2F2;
+    }
+
+    public double getN1F1Area() {
+        return n1F1Area;
+    }
+
+    public double getN1F2Area() {
+        return n1F2Area;
+    }
+
+    public double getN2F1Area() {
+        return n2F1Area;
+    }
+
+    public double getN2F2Area() {
+        return n2F2Area;
     }
 
     public long getInterruptedN2Jobs() {

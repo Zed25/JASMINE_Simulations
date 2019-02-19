@@ -144,10 +144,6 @@ public class StatisticsUtils {
             double[] batchCloudClass1MeanPop = this.computeMeanAndConfidenceWidth(batchStatistics.getClass1CloudMeanPop());
             double[] batchCloudClass2MeanPop = this.computeMeanAndConfidenceWidth(batchStatistics.getClass2CloudMeanPop());
 
-            /* ------------------------------------------- (C.3.6) ----------------------------------------------------- */
-            double[] batchClass2InterruptedPercentage = this.computeMeanAndConfidenceWidth(batchStatistics.getClass2InterruptedPercentage());
-            double[] batchClass2InterruptedRespTime = this.computeMeanAndConfidenceWidth(batchStatistics.getClass2InterruptedRespTime());
-
             System.out.println("\n-------------------------------------------------------------");
             System.out.println("\t\t\t\t\t\tA.3.1 / C.2.1");
             System.out.println("-------------------------------------------------------------\n");
@@ -255,25 +251,87 @@ public class StatisticsUtils {
                     + decimalFourZero.format(batchCloudClass2MeanPop[0] - batchCloudClass2MeanPop[1]) + " , "
                     + decimalFourZero.format(batchCloudClass2MeanPop[0] + batchCloudClass2MeanPop[1]) + "]\n");
 
-            System.out.println("\n-------------------------------------------------------------");
-            System.out.println("\t\t\t\t\t\tC.2.6");
-            System.out.println("-------------------------------------------------------------\n");
-            System.out.println("Class 2 Interrupted Percentage " + (Configuration.LOC * 100) + "% Confidence Interval");
-            System.out.println(decimalFourZero.format(batchClass2InterruptedPercentage[0]) + " ± " + decimalFourZero.format(batchClass2InterruptedPercentage[1]) +
-                    " ----> ["
-                    + decimalFourZero.format(batchClass2InterruptedPercentage[0] - batchClass2InterruptedPercentage[1]) + " , "
-                    + decimalFourZero.format(batchClass2InterruptedPercentage[0] + batchClass2InterruptedPercentage[1]) + "] ======> "
-                    + decimalFourZero.format(batchClass2InterruptedPercentage[0] * 100) + "% ± "
-                    + decimalFourZero.format(batchClass2InterruptedPercentage[1] * 100) +
-                    "% ----> ["
-                    + decimalFourZero.format((batchClass2InterruptedPercentage[0] - batchClass2InterruptedPercentage[1]) * 100)
-                    + "% , "
-                    + decimalFourZero.format((batchClass2InterruptedPercentage[0] + batchClass2InterruptedPercentage[1]) * 100) + "%]\n");
-            System.out.println("Class 2 Interrupted Response Time " + (Configuration.LOC * 100) + "% Confidence Interval");
-            System.out.println(decimalFourZero.format(batchClass2InterruptedRespTime[0]) + " ± " + decimalFourZero.format(batchClass2InterruptedRespTime[1]) +
-                    " ----> ["
-                    + decimalFourZero.format(batchClass2InterruptedRespTime[0] - batchClass2InterruptedRespTime[1]) + " , "
-                    + decimalFourZero.format(batchClass2InterruptedRespTime[0] + batchClass2InterruptedRespTime[1]) + "]\n");
+            /* ------------------------------------------- (C.3.6) ----------------------------------------------------- */
+            if (Configuration.EXECUTION_ALGORITHM == Configuration.Algorithms.ALGORITHM_2) {
+                double[] batchClass2InterruptedPercentage = this.computeMeanAndConfidenceWidth(batchStatistics.getClass2InterruptedPercentage());
+                double[] batchClass2InterruptedRespTime = this.computeMeanAndConfidenceWidth(batchStatistics.getClass2InterruptedRespTime());
+
+                System.out.println("\n-------------------------------------------------------------");
+                System.out.println("\t\t\t\t\t\tC.2.6");
+                System.out.println("-------------------------------------------------------------\n");
+                System.out.println("Class 2 Interrupted Percentage " + (Configuration.LOC * 100) + "% Confidence Interval");
+                System.out.println(decimalFourZero.format(batchClass2InterruptedPercentage[0]) + " ± " + decimalFourZero.format(batchClass2InterruptedPercentage[1]) +
+                        " ----> ["
+                        + decimalFourZero.format(batchClass2InterruptedPercentage[0] - batchClass2InterruptedPercentage[1]) + " , "
+                        + decimalFourZero.format(batchClass2InterruptedPercentage[0] + batchClass2InterruptedPercentage[1]) + "] ======> "
+                        + decimalFourZero.format(batchClass2InterruptedPercentage[0] * 100) + "% ± "
+                        + decimalFourZero.format(batchClass2InterruptedPercentage[1] * 100) +
+                        "% ----> ["
+                        + decimalFourZero.format((batchClass2InterruptedPercentage[0] - batchClass2InterruptedPercentage[1]) * 100)
+                        + "% , "
+                        + decimalFourZero.format((batchClass2InterruptedPercentage[0] + batchClass2InterruptedPercentage[1]) * 100) + "%]\n");
+                System.out.println("Class 2 Interrupted Response Time " + (Configuration.LOC * 100) + "% Confidence Interval");
+                System.out.println(decimalFourZero.format(batchClass2InterruptedRespTime[0]) + " ± " + decimalFourZero.format(batchClass2InterruptedRespTime[1]) +
+                        " ----> ["
+                        + decimalFourZero.format(batchClass2InterruptedRespTime[0] - batchClass2InterruptedRespTime[1]) + " , "
+                        + decimalFourZero.format(batchClass2InterruptedRespTime[0] + batchClass2InterruptedRespTime[1]) + "]\n");
+            }
+
+            /* ------------------------------------------- Hyperexp phases ----------------------------------------------------- */
+            if (Configuration.CLOUDLET_HYPEREXP_SERVICE) {
+                double[] batchN1F1RespTime = this.computeMeanAndConfidenceWidth(batchStatistics.getProcessedN1F1RespTime());
+                double[] batchN1F2RespTime = this.computeMeanAndConfidenceWidth(batchStatistics.getProcessedN1F2RespTime());
+                double[] batchN2F1RespTime = this.computeMeanAndConfidenceWidth(batchStatistics.getProcessedN2F1RespTime());
+                double[] batchN2F2RespTime = this.computeMeanAndConfidenceWidth(batchStatistics.getProcessedN2F2RespTime());
+                double[] batchN1F1MeanPop = this.computeMeanAndConfidenceWidth(batchStatistics.getProcessedN1F1MeanPop());
+                double[] batchN1F2MeanPop = this.computeMeanAndConfidenceWidth(batchStatistics.getProcessedN1F2MeanPop());
+                double[] batchN2F1MeanPop = this.computeMeanAndConfidenceWidth(batchStatistics.getProcessedN2F1MeanPop());
+                double[] batchN2F2MeanPop = this.computeMeanAndConfidenceWidth(batchStatistics.getProcessedN2F2MeanPop());
+
+                System.out.println("\n-------------------------------------------------------------");
+                System.out.println("\t\t\t\t\t\tHyperexponential phases");
+                System.out.println("-------------------------------------------------------------\n");
+                System.out.println("N1 F1 Response Time " + (Configuration.LOC * 100) + "% Confidence Interval");
+                System.out.println(decimalFourZero.format(batchN1F1RespTime[0]) + " ± " + decimalFourZero.format(batchN1F1RespTime[1]) +
+                        " ----> ["
+                        + decimalFourZero.format(batchN1F1RespTime[0] - batchN1F1RespTime[1]) + " , "
+                        + decimalFourZero.format(batchN1F1RespTime[0] + batchN1F1RespTime[1]) + "]\n");
+                System.out.println("N1 F2 Response Time " + (Configuration.LOC * 100) + "% Confidence Interval");
+                System.out.println(decimalFourZero.format(batchN1F2RespTime[0]) + " ± " + decimalFourZero.format(batchN1F2RespTime[1]) +
+                        " ----> ["
+                        + decimalFourZero.format(batchN1F2RespTime[0] - batchN1F2RespTime[1]) + " , "
+                        + decimalFourZero.format(batchN1F2RespTime[0] + batchN1F2RespTime[1]) + "]\n");
+                System.out.println("N2 F1 Response Time " + (Configuration.LOC * 100) + "% Confidence Interval");
+                System.out.println(decimalFourZero.format(batchN2F1RespTime[0]) + " ± " + decimalFourZero.format(batchN2F1RespTime[1]) +
+                        " ----> ["
+                        + decimalFourZero.format(batchN2F1RespTime[0] - batchN2F1RespTime[1]) + " , "
+                        + decimalFourZero.format(batchN2F1RespTime[0] + batchN2F1RespTime[1]) + "]\n");
+                System.out.println("N2 F2 Response Time " + (Configuration.LOC * 100) + "% Confidence Interval");
+                System.out.println(decimalFourZero.format(batchN2F2RespTime[0]) + " ± " + decimalFourZero.format(batchN2F2RespTime[1]) +
+                        " ----> ["
+                        + decimalFourZero.format(batchN2F2RespTime[0] - batchN2F2RespTime[1]) + " , "
+                        + decimalFourZero.format(batchN2F2RespTime[0] + batchN2F2RespTime[1]) + "]\n");
+                System.out.println("N1 F1 Mean Population " + (Configuration.LOC * 100) + "% Confidence Interval");
+                System.out.println(decimalFourZero.format(batchN1F1MeanPop[0]) + " ± " + decimalFourZero.format(batchN1F1MeanPop[1]) +
+                        " ----> ["
+                        + decimalFourZero.format(batchN1F1MeanPop[0] - batchN1F1MeanPop[1]) + " , "
+                        + decimalFourZero.format(batchN1F1MeanPop[0] + batchN1F1MeanPop[1]) + "]\n");
+                System.out.println("N1 F2 Mean Population " + (Configuration.LOC * 100) + "% Confidence Interval");
+                System.out.println(decimalFourZero.format(batchN1F2MeanPop[0]) + " ± " + decimalFourZero.format(batchN1F2MeanPop[1]) +
+                        " ----> ["
+                        + decimalFourZero.format(batchN1F2MeanPop[0] - batchN1F2MeanPop[1]) + " , "
+                        + decimalFourZero.format(batchN1F2MeanPop[0] + batchN1F2MeanPop[1]) + "]\n");
+                System.out.println("N2 F1 Mean Population " + (Configuration.LOC * 100) + "% Confidence Interval");
+                System.out.println(decimalFourZero.format(batchN2F1MeanPop[0]) + " ± " + decimalFourZero.format(batchN2F1MeanPop[1]) +
+                        " ----> ["
+                        + decimalFourZero.format(batchN2F1MeanPop[0] - batchN2F1MeanPop[1]) + " , "
+                        + decimalFourZero.format(batchN2F1MeanPop[0] + batchN2F1MeanPop[1]) + "]\n");
+                System.out.println("N2 F2 Mean Population " + (Configuration.LOC * 100) + "% Confidence Interval");
+                System.out.println(decimalFourZero.format(batchN2F2MeanPop[0]) + " ± " + decimalFourZero.format(batchN2F2MeanPop[1]) +
+                        " ----> ["
+                        + decimalFourZero.format(batchN2F2MeanPop[0] - batchN2F2MeanPop[1]) + " , "
+                        + decimalFourZero.format(batchN2F2MeanPop[0] + batchN2F2MeanPop[1]) + "]\n");
+            }
         }
     }
 }

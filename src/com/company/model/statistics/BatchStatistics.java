@@ -44,6 +44,16 @@ public class BatchStatistics implements BatchMeanStatistics, CSVPrintable {
     private List<Double> class2InterruptedPercentage;           /* class 2 interrupted jobs percentage */
     private List<Double> class2InterruptedRespTime;             /* class 2 interrupted jobs response time */
 
+    /* ------------------------------ Hyperexp phases ------------------------------ */
+    private List<Double> processedN1F1RespTime;                 /* class 1 phase 1 response time */
+    private List<Double> processedN1F2RespTime;                 /* class 1 phase 2 response time */
+    private List<Double> processedN2F1RespTime;                 /* class 2 phase 1 response time */
+    private List<Double> processedN2F2RespTime;                 /* class 2 phase 2 response time */
+    private List<Double> processedN1F1MeanPop;                  /* class 1 phase 1 mean population */
+    private List<Double> processedN1F2MeanPop;                  /* class 1 phase 2 mean population */
+    private List<Double> processedN2F1MeanPop;                  /* class 2 phase 1 mean population */
+    private List<Double> processedN2F2MeanPop;                  /* class 2 phase 2 mean population */
+
 
     public BatchStatistics() {
         /* ---------------------- init batch statistics ---------------------- */
@@ -93,6 +103,16 @@ public class BatchStatistics implements BatchMeanStatistics, CSVPrintable {
         this.class2InterruptedPercentage = new ArrayList<>();
 
         this.class2InterruptedRespTime = new ArrayList<>();
+
+        /* ------------------------- Hyperexp phases ------------------------- */
+        this.processedN1F1RespTime = new ArrayList<>();
+        this.processedN1F2RespTime = new ArrayList<>();
+        this.processedN2F1RespTime = new ArrayList<>();
+        this.processedN2F2RespTime = new ArrayList<>();
+        this.processedN1F1MeanPop = new ArrayList<>();
+        this.processedN1F2MeanPop = new ArrayList<>();
+        this.processedN2F1MeanPop = new ArrayList<>();
+        this.processedN2F2MeanPop = new ArrayList<>();
 
         /* ----------------- reset batch one time to init it ------------------ */
         this.resetBatch();
@@ -148,6 +168,16 @@ public class BatchStatistics implements BatchMeanStatistics, CSVPrintable {
         this.class2InterruptedPercentage.add(0.0);
 
         this.class2InterruptedRespTime.add(0.0);
+
+        /* ------------------------- Hyperexp phases ------------------------- */
+        this.processedN1F1RespTime.add(0.0);
+        this.processedN1F2RespTime.add(0.0);
+        this.processedN2F1RespTime.add(0.0);
+        this.processedN2F2RespTime.add(0.0);
+        this.processedN1F1MeanPop.add(0.0);
+        this.processedN1F2MeanPop.add(0.0);
+        this.processedN2F1MeanPop.add(0.0);
+        this.processedN2F2MeanPop.add(0.0);
 
     }
 
@@ -246,6 +276,37 @@ public class BatchStatistics implements BatchMeanStatistics, CSVPrintable {
                         (baseStatistics.getInterruptedN2JobsServiceTimeOnClet() +
                                 baseStatistics.getInterruptedN2JobsServiceTimeOnCloud()) / (double) baseStatistics.getInterruptedN2Jobs()
                 );
+            }
+        }
+
+        /* if cloudlet service is hyperexponential update:
+         *      1. class 1 phase 1 response time
+         *      2. class 1 phase 2 response time
+         *      3. class 2 phase 1 response time
+         *      3. class 2 phase 2 response time
+         *      3. class 1 phase 1 mean population
+         *      3. class 1 phase 2 mean population
+         *      3. class 2 phase 1 mean population
+         *      3. class 2 phase 2 mean population
+         * */
+        if (Configuration.CLOUDLET_HYPEREXP_SERVICE) {
+            if (baseStatistics.getProcessedN1F1() > 0) {
+                this.processedN1F1RespTime.set(lastBatchIndex, baseStatistics.getN1F1Area() / (double) baseStatistics.getProcessedN1F1());
+            }
+            if (baseStatistics.getProcessedN1F2() > 0) {
+                this.processedN1F2RespTime.set(lastBatchIndex, baseStatistics.getN1F2Area() / (double) baseStatistics.getProcessedN1F2());
+            }
+            if (baseStatistics.getProcessedN2F1() > 0) {
+                this.processedN2F1RespTime.set(lastBatchIndex, baseStatistics.getN2F1Area() / (double) baseStatistics.getProcessedN2F1());
+            }
+            if (baseStatistics.getProcessedN2F2() > 0) {
+                this.processedN2F2RespTime.set(lastBatchIndex, baseStatistics.getN2F2Area() / (double) baseStatistics.getProcessedN2F2());
+            }
+            if (currentTime > 0) {
+                this.processedN1F1MeanPop.set(lastBatchIndex, baseStatistics.getN1F1Area() / currentTime);
+                this.processedN1F2MeanPop.set(lastBatchIndex, baseStatistics.getN1F2Area() / currentTime);
+                this.processedN2F1MeanPop.set(lastBatchIndex, baseStatistics.getN2F1Area() / currentTime);
+                this.processedN2F2MeanPop.set(lastBatchIndex, baseStatistics.getN2F2Area() / currentTime);
             }
         }
     }
@@ -357,5 +418,37 @@ public class BatchStatistics implements BatchMeanStatistics, CSVPrintable {
 
     public List<Double> getClass2InterruptedRespTime() {
         return class2InterruptedRespTime;
+    }
+
+    public List<Double> getProcessedN1F1RespTime() {
+        return processedN1F1RespTime;
+    }
+
+    public List<Double> getProcessedN1F2RespTime() {
+        return processedN1F2RespTime;
+    }
+
+    public List<Double> getProcessedN2F1RespTime() {
+        return processedN2F1RespTime;
+    }
+
+    public List<Double> getProcessedN2F2RespTime() {
+        return processedN2F2RespTime;
+    }
+
+    public List<Double> getProcessedN1F1MeanPop() {
+        return processedN1F1MeanPop;
+    }
+
+    public List<Double> getProcessedN1F2MeanPop() {
+        return processedN1F2MeanPop;
+    }
+
+    public List<Double> getProcessedN2F1MeanPop() {
+        return processedN2F1MeanPop;
+    }
+
+    public List<Double> getProcessedN2F2MeanPop() {
+        return processedN2F2MeanPop;
     }
 }

@@ -1,6 +1,7 @@
 package com.company;
 
 import com.company.configuration.Configuration;
+import com.company.model.HyperexpSystemState;
 import com.company.model.SystemState;
 import com.company.model.Time;
 import com.company.model.event.NextEventInfo;
@@ -57,7 +58,13 @@ public class Simulator {
                                                    nextEventInfo[0] <- index,
                                                    nextEventInfo <- Location (CLOUDLET, CLOUD) */
 
-        SystemState systemState = new SystemState();   /* init system state (0,0,0,0) */
+        SystemState systemState;                /* init system state (N1Clet, N2Clet, N1Cloud, N2Cloud) <- (0,0,0,0) */
+        if (Configuration.CLOUDLET_HYPEREXP_SERVICE) {  /* if hyperexponential cloudlet service
+                                                           add other system state (N1F1, N1F2, N2F1, N2F2) <- (0,0,0,0) */
+            systemState = new HyperexpSystemState();
+        } else {
+            systemState = new SystemState();
+        }
 
         this.t = new Time();                    /* init time */
 
