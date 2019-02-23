@@ -12,31 +12,36 @@ import java.util.List;
 
 public class StationaryStatistics implements AggregateStatistics, CSVPrintable {
 
-    private List<TimeValueStatistics> systemResponseTime;
-    private List<TimeValueStatistics> class1RespTime;
-    private List<TimeValueStatistics> class2RespTime;
-    private List<TimeValueStatistics> globalThr;
-    private List<TimeValueStatistics> class1Thr;
-    private List<TimeValueStatistics> class2Thr;
+    /* --------------------------- A.3.1 Statistics --------------------------- */
+    private List<TimeValueStatistics> systemResponseTime;           /* system response time*/
+    private List<TimeValueStatistics> class1RespTime;               /* class 1 response time*/
+    private List<TimeValueStatistics> class2RespTime;               /* class 2 response time */
+    private List<TimeValueStatistics> globalThr;                    /* system global throughput */
+    private List<TimeValueStatistics> class1Thr;                    /* system class 1 throughput */
+    private List<TimeValueStatistics> class2Thr;                    /* system class 2 throughput */
 
-    private List<TimeValueStatistics> cloudletClass1EffectiveThr;
-    private List<TimeValueStatistics> cloudletClass2EffectiveThr;
+    /* --------------------------- A.3.2 Statistics --------------------------- */
+    private List<TimeValueStatistics> cloudletClass1EffectiveThr;   /* cloudlet effective class 1 throughput */
+    private List<TimeValueStatistics> cloudletClass2EffectiveThr;   /* cloudlet effective class 2 throughput */
 
-    private List<TimeValueStatistics> cloudClass1Thr;
-    private List<TimeValueStatistics> cloudClass2Thr;
+    /* --------------------------- A.3.3 Statistics --------------------------- */
+    private List<TimeValueStatistics> cloudClass1Thr;               /* cloud class 1 throughput */
+    private List<TimeValueStatistics> cloudClass2Thr;               /* cloud class 2 throughput */
 
-    private List<TimeValueStatistics> cloudletClass1RespTime;
-    private List<TimeValueStatistics> cloudletClass2RespTime;
-    private List<TimeValueStatistics> cloudClass1RespTime;
-    private List<TimeValueStatistics> cloudClass2RespTime;
-    private List<TimeValueStatistics> cloudletClass1MeanPop;
-    private List<TimeValueStatistics> cloudletClass2MeanPop;
-    private List<TimeValueStatistics> cloudClass1MeanPop;
-    private List<TimeValueStatistics> cloudClass2MeanPop;
+    /* --------------------------- A.3.4 Statistics --------------------------- */
+    private List<TimeValueStatistics> cloudletClass1RespTime;       /* class 1 cloudlet response time */
+    private List<TimeValueStatistics> cloudletClass2RespTime;       /* class 2 cloudlet response time */
+    private List<TimeValueStatistics> cloudClass1RespTime;          /* class 1 cloud response time */
+    private List<TimeValueStatistics> cloudClass2RespTime;          /* class 2 cloud response time */
+    private List<TimeValueStatistics> cloudletClass1MeanPop;        /* class 1 cloudlet mean population */
+    private List<TimeValueStatistics> cloudletClass2MeanPop;        /* class 2 cloudlet mean population */
+    private List<TimeValueStatistics> cloudClass1MeanPop;           /* class 1 cloud mean population */
+    private List<TimeValueStatistics> cloudClass2MeanPop;           /* class 2 cloud mean population */
 
-    private BaseStatistics baseStatistics;
+    private BaseStatistics baseStatistics;                          /* base statistics */
 
     public StationaryStatistics() {
+        /* --------------------------- A.3.1 Statistics --------------------------- */
         this.systemResponseTime = new ArrayList<>();
         this.class1RespTime = new ArrayList<>();
         this.class2RespTime = new ArrayList<>();
@@ -44,12 +49,15 @@ public class StationaryStatistics implements AggregateStatistics, CSVPrintable {
         this.class1Thr = new ArrayList<>();
         this.class2Thr = new ArrayList<>();
 
+        /* --------------------------- A.3.2 Statistics --------------------------- */
         this.cloudletClass1EffectiveThr = new ArrayList<>();
         this.cloudletClass2EffectiveThr = new ArrayList<>();
 
+        /* --------------------------- A.3.3 Statistics --------------------------- */
         this.cloudClass1Thr = new ArrayList<>();
         this.cloudClass2Thr = new ArrayList<>();
 
+        /* --------------------------- A.3.4 Statistics --------------------------- */
         this.cloudletClass1RespTime = new ArrayList<>();
         this.cloudletClass2RespTime = new ArrayList<>();
         this.cloudClass1RespTime = new ArrayList<>();
@@ -59,6 +67,7 @@ public class StationaryStatistics implements AggregateStatistics, CSVPrintable {
         this.cloudClass1MeanPop = new ArrayList<>();
         this.cloudClass2MeanPop = new ArrayList<>();
 
+        /* --------------------------- init base statistics --------------------------- */
         this.baseStatistics = new BaseStatistics();
     }
 
@@ -71,14 +80,14 @@ public class StationaryStatistics implements AggregateStatistics, CSVPrintable {
     public void updateAggregateStatistics() {
         BaseStatistics baseStatistics = this.baseStatistics;
 
-        /* if there are jobs processed record instant values:
-         *      1. system response time
-         *      2. class 1 response time
-         *      3. class 2 response time
-         *      4. class 1 cloudlet response time
-         *      5. class 2 cloudlet response time
-         *      6. class 1 cloud response time
-         *      7. class 2 cloud response time
+        /* if there are jobs processed update statistics:
+         *      1. system response time             (A.3.1)
+         *      2. class 1 response time            (A.3.1)
+         *      3. class 2 response time            (A.3.1)
+         *      4. class 1 cloudlet response time   (A.3.4)
+         *      5. class 2 cloudlet response time   (A.3.4)
+         *      6. class 1 cloud response time      (A.3.4)
+         *      7. class 2 cloud response time      (A.3.4)
          * */
         if (baseStatistics.getProcessedSystemJobsNumber() > 0) {
             this.systemResponseTime.add(new TimeValueStatistics(
@@ -131,17 +140,17 @@ public class StationaryStatistics implements AggregateStatistics, CSVPrintable {
         }
 
         /* if batch current time is grater than 0 update statistics:
-         *      1.  global throughput
-         *      2.  class 1 throughput
-         *      3.  class 2 throughput
-         *      4.  cloudlet effective class 1 throughput
-         *      5.  cloudlet effective class 2 throughput
-         *      6.  cloud class 1 throughput
-         *      7.  cloud class 1 throughput
-         *      8.  cloudlet class 1 mean population
-         *      9.  cloudlet class 2 mean population
-         *      10. cloud class 1 mean population
-         *      11. cloud class 2 mean population
+         *      1.  global throughput                       (A.3.1)
+         *      2.  class 1 throughput                      (A.3.1)
+         *      3.  class 2 throughput                      (A.3.1)
+         *      4.  cloudlet effective class 1 throughput   (A.3.2)
+         *      5.  cloudlet effective class 2 throughput   (A.3.2)
+         *      6.  cloud class 1 throughput                (A.3.3)
+         *      7.  cloud class 1 throughput                (A.3.3)
+         *      8.  cloudlet class 1 mean population        (A.3.4)
+         *      9.  cloudlet class 2 mean population        (A.3.4)
+         *      10. cloud class 1 mean population           (A.3.4)
+         *      11. cloud class 2 mean population           (A.3.4)
          *      */
         double currentTime = baseStatistics.getCurrentTime();
         if (currentTime > 0) { /* if batch current time grater than 0,

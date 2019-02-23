@@ -1,8 +1,8 @@
 package com.company.model.statistics;
 
 public class TimeValueStatistics {
-    private double time;
-    private double value;
+    private double time;                /* simulation time when statistics is sampled  */
+    private double value;               /* sampled statistic value  */
 
     public TimeValueStatistics(double time, double value) {
         this.time = time;

@@ -70,13 +70,13 @@ public class Controller {
                 nextEventInfo.getLocation() == EventLocation.CLOUDLET) {  /* process cloudlet arrival*/
 
             if (Configuration.EXECUTION_ALGORITHM == Configuration.Algorithms.ALGORITHM_1) {
-
-                this.execAlgorithm1(cloudletEvents, cloudEvents, systemState, t, arrival, stopTime);  /* exec algorithm 1 */
+                /* exec algorithm 1 */
+                this.execAlgorithm1(cloudletEvents, cloudEvents, systemState, t, arrival);
 
             } else if (Configuration.EXECUTION_ALGORITHM == Configuration.Algorithms.ALGORITHM_2) {
-
-                this.execAlgorithm2(cloudletEvents, cloudEvents, systemState, t, arrival, stopTime,
-                        batchStatistics.getLastBatchStatistics(), stationaryStatistics.getBaseStatistics());  /* exec algorithm 1 */
+                /* exec algorithm 2 */
+                this.execAlgorithm2(cloudletEvents, cloudEvents, systemState, t, arrival,
+                        batchStatistics.getLastBatchStatistics(), stationaryStatistics.getBaseStatistics());
 
             }
             this.computeNextArrival(arrival, stopTime, cloudletEvents); /* compute next arrival */
@@ -104,7 +104,7 @@ public class Controller {
             if (arrival[0] < arrival[1]) {                            /* next arrival will be a CLASS1 job */
                 cloudletEvents[0].setNextEventTime(arrival[0]);
                 cloudletEvents[0].setClassType(ClassType.CLASS1);
-            } else {                                                            /* next arrival will be a CLASS2 job */
+            } else {                                                          /* next arrival will be a CLASS2 job */
                 cloudletEvents[0].setNextEventTime(arrival[1]);
                 cloudletEvents[0].setClassType(ClassType.CLASS2);
             }
@@ -121,9 +121,9 @@ public class Controller {
      * ----------------------------------------------------------------------------------------------------------------
      */
     private void execAlgorithm1(CloudletEvent[] cloudletEvents,
-                                List<CloudEvent> cloudEvents, SystemState systemState, Time time, double[] arrival, double stopTime) {
+                                List<CloudEvent> cloudEvents, SystemState systemState, Time time, double[] arrival) {
         if ((systemState.getN1Clet() + systemState.getN2Clet()) == N) {     /* check (n1 + n2 = N)*/
-            this.acceptJobToCloud(cloudletEvents[0], cloudEvents, systemState, time, arrival);    /* accept job on cloud */
+            this.acceptJobToCloud(cloudletEvents[0], cloudEvents, systemState, time, arrival); /* accept job on cloud */
         } else {
             this.acceptJobToCloudlet(cloudletEvents, systemState, time, arrival);    /* accept job on cloudlet */
         }
@@ -136,17 +136,17 @@ public class Controller {
      */
     private void execAlgorithm2(CloudletEvent[] cloudletEvents,
                                 List<CloudEvent> cloudEvents, SystemState systemState,
-                                Time time, double[] arrival, double stopTime,
+                                Time time, double[] arrival,
                                 BaseStatistics batchStatistics,
                                 BaseStatistics stationaryStatistics) {
         switch (cloudletEvents[0].getClassType()) {
-            case CLASS1:
+            case CLASS1:                                                                        /* CLASS 1 JOB */
                 if (systemState.getN1Clet() == N) {                                                     /* check n1 == N */
                     this.acceptJobToCloud(cloudletEvents[0], cloudEvents, systemState, time, arrival);  /* accept job on cloud */
                 } else if (systemState.getN1Clet() + systemState.getN2Clet() < S) {                      /* check (n1 + n2) < S */
                     this.acceptJobToCloudlet(cloudletEvents, systemState, time, arrival);               /* accept job on cloudlet */
                 } else if (systemState.getN2Clet() > 0) {                                             /* check n2 > 0 */
-                                                                                                        /* send 1 class 2 job to
+                                                                                                        /* send one class 2 job to
                                                                                                         cloud and accept class 1 job*/
                     this.interruptClass2JobAndAcceptOnCloudlet(cloudletEvents, cloudEvents, systemState,
                             time, arrival, batchStatistics, stationaryStatistics);
@@ -154,8 +154,8 @@ public class Controller {
                     this.acceptJobToCloudlet(cloudletEvents, systemState, time, arrival);               /* otherwise accept job on cloudlet */
                 }
                 break;
-            case CLASS2:
-                if (systemState.getN1Clet() + systemState.getN2Clet() >= S) {                            /* check (n1 + n2) >= S */
+            case CLASS2:                                                                            /* CLASS 2 JOB */
+                if (systemState.getN1Clet() + systemState.getN2Clet() >= S) {                          /* check (n1 + n2) >= S */
                     this.acceptJobToCloud(cloudletEvents[0], cloudEvents, systemState, time, arrival);  /* send job to cloud*/
                 } else {
                     this.acceptJobToCloudlet(cloudletEvents, systemState, time, arrival);               /* accept job on cloudlet */
@@ -168,7 +168,8 @@ public class Controller {
 
 
     private void interruptClass2JobAndAcceptOnCloudlet(CloudletEvent[] cloudletEvents, List<CloudEvent> cloudEvents,
-                                                       SystemState systemState, Time time, double[] arrival, BaseStatistics batchStatistics, BaseStatistics stationaryStatistics) {
+                                                       SystemState systemState, Time time, double[] arrival,
+                                                       BaseStatistics batchStatistics, BaseStatistics stationaryStatistics) {
         /* interrupt class 2 job on cloudlet */
         this.interruptClass2JobOnCloudlet(cloudletEvents, systemState, time, batchStatistics, stationaryStatistics);
         /* send job to cloud */
@@ -182,10 +183,6 @@ public class Controller {
      *  ----------------------------------------------------------------------------------------------------------------
      *  */
 
-    /**
-     *  accept job to cloudlet
-     *
-     *  */
     /**
      * ----------------------
      * accept job to cloudlet
@@ -214,7 +211,7 @@ public class Controller {
         cloudletEvents[s].setNextEventTime(time.getCurrent() + service[1]); /* set job departure time */
         cloudletEvents[s].setEventStatus(EventStatus.ACTIVE);               /* set event active */
         cloudletEvents[s].setClassType(ClassType.CLASS1);                   /* set event class 1 */
-        cloudletEvents[s].setArrivalTime(time.getCurrent());                /* set arrival time to current time (for algorithm 2)*/
+        cloudletEvents[s].setArrivalTime(time.getCurrent());                /* set arrival time to current time (for algorithm 2) */
         cloudletEvents[s].setHyperexpPhase(service[0]);                     /* set phase type */
 
         if (Configuration.CLOUDLET_HYPEREXP_SERVICE) {
@@ -239,6 +236,7 @@ public class Controller {
         cloudletEvents[s].setArrivalTime(time.getCurrent());                /* set arrival time to current time (for algorithm 2)*/
         cloudletEvents[s].setHyperexpPhase(service[0]);                     /* set phase type */
 
+        /* update hyperexp state */
         if (Configuration.CLOUDLET_HYPEREXP_SERVICE) {
             ((HyperexpSystemState) systemState).incrementNF(cloudletEvents[s].getClassType(), cloudletEvents[s].getHyperexpPhase());
         }
@@ -263,10 +261,12 @@ public class Controller {
             stationaryStatistics.incrementProcJobsN2Clet();
         }
 
+        /* update hyperexp state */
         if (Configuration.CLOUDLET_HYPEREXP_SERVICE) {
             ((HyperexpSystemState) systemState).decrementNF(event.getClassType(), event.getHyperexpPhase());
         }
 
+        /* update statistics */
         baseStatistics.incrementProcessedJobPerPhase(event.getClassType(), event.getHyperexpPhase());
         stationaryStatistics.incrementProcessedJobPerPhase(event.getClassType(), event.getHyperexpPhase());
 

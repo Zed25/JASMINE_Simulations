@@ -20,7 +20,8 @@ public class Simulator {
     private final double STOP = Configuration.STOP;                     /* terminal (close the door) time */
     private final double INFINITY = 100 * STOP;                         /* infinity, much bigger than STOP */
 
-    private double arrival[] = {START, START};                          /* init arrival time for CLASS1 <- arrival[0] and CLASS2 <- arrival[1]*/
+    private double arrival[] = {START, START};                          /* init arrival time for CLASS1 <- arrival[0]
+                                                                           and CLASS2 <- arrival[1]*/
 
     /* UTILITIES */
     StatisticsUtils statisticsUtils = new StatisticsUtils();
@@ -55,7 +56,7 @@ public class Simulator {
     private void simulate() {
 
         NextEventInfo nextEventInfo;            /* next event info :
-                                                   nextEventInfo[0] <- index,
+                                                   nextEventInfo[0] <- list or array index,
                                                    nextEventInfo <- Location (CLOUDLET, CLOUD) */
 
         SystemState systemState;                /* init system state (N1Clet, N2Clet, N1Cloud, N2Cloud) <- (0,0,0,0) */
@@ -74,7 +75,7 @@ public class Simulator {
         BatchStatistics batchStatistics = new BatchStatistics(); /* init batch statistics */
 
         /* STATIONARY STATISTICS */
-        StationaryStatistics stationaryStatistics = new StationaryStatistics();
+        StationaryStatistics stationaryStatistics = new StationaryStatistics(); /* init stationary statistics */
 
         controller.plantSeeds(Configuration.SEED);          /* plant seeds */
 
@@ -84,17 +85,12 @@ public class Simulator {
         this.arrival[1] += this.controller.getArrival(ClassType.CLASS2); /* get first CLASS2 arrival */
 
         this.controller.getCloudletEvents()[0].setEventStatus(EventStatus.ACTIVE); /* set first event as active */
-        this.controller.computeNextArrival(this.arrival, this.STOP, this.controller.getCloudletEvents()); /* compute first arrival */
+        /* compute first arrival */
+        this.controller.computeNextArrival(this.arrival, this.STOP, this.controller.getCloudletEvents());
 
-        while (((this.controller.getCloudletEvents()[0].getEventStatus() == EventStatus.ACTIVE) || !systemState.systemIsEmpty()) /*&&
-                eventCounter < 700*/) {
-            if (Configuration.LIMIT_BATCH && batchStatistics.getBatchMeanStatistics().size() == Configuration.MAX_BATCH_NUMBER) {
-                break;
-            }
-            /*if (eventCounter == 600) {
-                batchStatistics = new BatchStatistics();
-            }*/
-            nextEventInfo = this.simulatorUtils.nextEvent(                                     /* compute next event index */
+        while (((this.controller.getCloudletEvents()[0].getEventStatus() == EventStatus.ACTIVE)
+                || !systemState.systemIsEmpty())) {
+            nextEventInfo = this.simulatorUtils.nextEvent(                               /* compute next event index */
                     this.controller.getCloudletEvents(),
                     this.controller.getCloudEvents(),
                     this.INFINITY                       /* infinity time*/
@@ -102,8 +98,10 @@ public class Simulator {
 
             /* compute next event time  */
             if (nextEventInfo.getLocation() == EventLocation.CLOUDLET) {
+                /* set next event time as next event of CLOUDLET */
                 t.setNext(this.controller.getCloudletEvents()[nextEventInfo.getIndex()].getNextEventTime());
             } else {
+                /* set next event time as next event of CLOUDLET */
                 t.setNext(this.controller.getCloudEvents().get(nextEventInfo.getIndex()).getNextEventTime());
             }
             /* --- compute statistics --- */
@@ -113,23 +111,24 @@ public class Simulator {
                 } else {                                    /* update batch statistics */
                     batchStatistics.updateAggregateStatistics();
                 }
-                batchStatistics.updateStatistics(systemState, t); /* update batch base statistics before set t.currentTime to t.next */
+                batchStatistics.updateStatistics(systemState, t); /* update batch base statistics
+                                                                    before setting t.currentTime to t.next */
             }
             if (Configuration.EXEC_STATIONARY_STATISTICS) {
                 stationaryStatistics.updateStatistics(systemState, t); /* update stationary statistics */
                 if (stationaryStatistics.getBaseStatistics().getProcessedSystemJobsNumber() > 0) {
-                    stationaryStatistics.updateAggregateStatistics();
+                    stationaryStatistics.updateAggregateStatistics();  /* update stationary statistics */
                 }
             }
             eventCounter++;                                                         /* update event counter */
 
-            t.setCurrent(t.getNext());                                              /* advance the clock to next event*/
+            t.setCurrent(t.getNext());                                             /* advance the clock to next event*/
 
             controller.processEvent(nextEventInfo, systemState, this.t,                     /* process next event */
                     this.arrival, this.STOP, batchStatistics, stationaryStatistics);
         }
 
-        this.statisticsUtils.printStatistics(stationaryStatistics, batchStatistics);
+        this.statisticsUtils.printStatistics(stationaryStatistics, batchStatistics); /* print statistics */
 
     }
 }

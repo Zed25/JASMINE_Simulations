@@ -6,7 +6,7 @@ import com.company.model.event.enumeration.HyperexpPhaseType;
 
 public class CloudletEvent extends Event {
 
-    private HyperexpPhaseType hyperexpPhase; /* hyperexponential servise phase,
+    private HyperexpPhaseType hyperexpPhase;    /* hyperexponential servise phase,
                                                 relevant only if cloudlet service is hyperexponential */
 
     /* fake event constructor */

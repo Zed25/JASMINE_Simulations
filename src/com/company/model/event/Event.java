@@ -4,10 +4,10 @@ import com.company.model.event.enumeration.ClassType;
 import com.company.model.event.enumeration.EventStatus;
 
 public abstract class Event {
-    protected double nextEventTime; /* next event time */
-    protected EventStatus eventStatus; /* event status, ACTIVE, NOT_ACTIVE */
-    protected ClassType classType; /* job class type, CLASS1, CLASS2, NONE */
-    protected double arrivalTime; /* time which job joined the system*/
+    protected double nextEventTime;         /* next event time */
+    protected EventStatus eventStatus;      /* event status, ACTIVE, NOT_ACTIVE */
+    protected ClassType classType;          /* job class type, CLASS1, CLASS2, NONE */
+    protected double arrivalTime;           /* time which job joined the system*/
 
     public double getNextEventTime() {
         return nextEventTime;

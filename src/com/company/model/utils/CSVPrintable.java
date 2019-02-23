@@ -6,8 +6,13 @@ import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.util.Arrays;
 
+/**
+ * ---------------------------------------------------------------------------------------------------------------------
+ * --------------------------------------- CSV Printable Interface -----------------------------------------------------
+ * ---------------------------------------------------------------------------------------------------------------------
+ * */
 public interface CSVPrintable {
-    void writeToCSV(PrintWriter printer);
+    default void writeToCSV(PrintWriter printer){}
 
     default void writeToCSV(String path, String[] values) {
         try {

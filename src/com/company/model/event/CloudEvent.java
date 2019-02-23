@@ -6,8 +6,8 @@ import com.company.model.event.enumeration.HyperexpPhaseType;
 
 public class CloudEvent extends CloudletEvent {
 
-    boolean interruptedJob = false; /* check if is an interrupted job event
-                                       default value is false */
+    boolean interruptedJob = false;         /* check if is an interrupted job event
+                                            default value is false */
 
     /* fake event constructor */
     public CloudEvent() {

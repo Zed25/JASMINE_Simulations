@@ -29,14 +29,14 @@ public class SimulatorUtils {
         int cloudScan = 0;                                                          /* cloud scan index */
         int cloudletIndex;                                                          /* cloudlet chosen index */
         int cloudIndex;                                                             /* cloud chosen index */
-        double cloudletNextEventTime;
-        double cloudNextEventTime;
+        double cloudletNextEventTime;                                               /* cloudlet next event time*/
+        double cloudNextEventTime;                                                  /* cloud next event time*/
 
-        EventLocation eventLocation;
+        EventLocation eventLocation;                                                /* event location */
 
         /* find index cloudlet first event */
         while (cloudletEvents[cloudletScan].getEventStatus() == EventStatus.NOT_ACTIVE &&
-                cloudletScan < (cloudletEvents.length - 1)) {                      /* find the index of the first 'active'
+                cloudletScan < (cloudletEvents.length - 1)) {                  /* find the index of the first 'active'
                                                                                element in the event list */
             cloudletScan++;
         }
@@ -52,7 +52,7 @@ public class SimulatorUtils {
 
         /* compute cloudlet next event time */
         if (cloudletEvents[cloudletIndex].getEventStatus() == EventStatus.NOT_ACTIVE) {
-            cloudletNextEventTime = infinityTime;
+            cloudletNextEventTime = infinityTime; /* set next event time to infinity */
         } else {
             cloudletNextEventTime = cloudletEvents[cloudletIndex].getNextEventTime();
         }
@@ -75,12 +75,12 @@ public class SimulatorUtils {
 
             /* compute cloud next event time */
             if (cloudEvents.get(cloudIndex).getEventStatus() == EventStatus.NOT_ACTIVE) {
-                cloudNextEventTime = infinityTime;
+                cloudNextEventTime = infinityTime; /* set next event time to infinity */
             } else {
                 cloudNextEventTime = cloudEvents.get(cloudIndex).getNextEventTime();
             }
         } else {
-            cloudNextEventTime = infinityTime;
+            cloudNextEventTime = infinityTime; /* no event -> set next event time to infinity */
             cloudIndex = -1;
         }
 
@@ -91,6 +91,7 @@ public class SimulatorUtils {
             eventIndex = cloudIndex;
             eventLocation = EventLocation.CLOUD;
         }
+        /* return info about list or array index and event location */
         return new NextEventInfo(eventIndex, eventLocation);
     }
 

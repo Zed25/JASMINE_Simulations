@@ -4,11 +4,12 @@ import com.company.model.event.enumeration.ClassType;
 import com.company.model.event.enumeration.HyperexpPhaseType;
 
 public class HyperexpSystemState extends SystemState{
-    private long N1F1;
-    private long N1F2;
-    private long N2F1;
-    private long N2F2;
+    private long N1F1;                  /* CLASS 1 PHASE 1 jobs' number in cloudlet */
+    private long N1F2;                  /* CLASS 1 PHASE 2 jobs' number in cloudlet */
+    private long N2F1;                  /* CLASS 2 PHASE 1 jobs' number in cloudlet */
+    private long N2F2;                  /* CLASS 2 PHASE 2 jobs' number in cloudlet */
 
+    /* init first hyperexp service markov state (0,0,0,0) */
     public HyperexpSystemState() {
         super();
         this.N1F1 = 0;
@@ -17,6 +18,11 @@ public class HyperexpSystemState extends SystemState{
         this.N2F2 = 0;
     }
 
+    /**
+     * --------------------------------------------------------------------------
+     * choose the right increment function according to class type and phase type
+     * --------------------------------------------------------------------------
+     */
     public void incrementNF(ClassType classType, HyperexpPhaseType phaseType) {
         switch (classType) {
             case CLASS1:
@@ -42,6 +48,11 @@ public class HyperexpSystemState extends SystemState{
         }
     }
 
+    /**
+     * --------------------------------------------------------------------------
+     * choose the right decrement function according to class type and phase type
+     * --------------------------------------------------------------------------
+     */
     public void decrementNF(ClassType classType, HyperexpPhaseType phaseType) {
         switch (classType) {
             case CLASS1:
@@ -70,24 +81,31 @@ public class HyperexpSystemState extends SystemState{
     public void incrementN1F1() {
         this.N1F1++;
     }
+
     public void incrementN1F2() {
         this.N1F2++;
     }
+
     public void incrementN2F1() {
         this.N2F1++;
     }
+
     public void incrementN2F2() {
         this.N2F2++;
     }
+
     public void decrementN1F1() {
         this.N1F1--;
     }
+
     public void decrementN1F2() {
         this.N1F2--;
     }
+
     public void decrementN2F1() {
         this.N2F1--;
     }
+
     public void decrementN2F2() {
         this.N2F2--;
     }

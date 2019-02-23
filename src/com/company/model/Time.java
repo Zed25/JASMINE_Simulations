@@ -2,8 +2,8 @@ package com.company.model;
 
 public class Time {
 
-    private double current;                /* current time                        */
-    private double next;                   /* next (most imminent) event time     */
+    private double current;                /* current time */
+    private double next;                   /* next (most imminent) event time */
 
     public Time() {
     }

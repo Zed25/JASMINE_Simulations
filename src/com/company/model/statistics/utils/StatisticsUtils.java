@@ -2,17 +2,14 @@ package com.company.model.statistics.utils;
 
 import com.company.Rvms;
 import com.company.configuration.Configuration;
-import com.company.model.SystemState;
 import com.company.model.statistics.BatchStatistics;
 import com.company.model.statistics.StationaryStatistics;
 import com.company.model.utils.CSVPrintable;
-import com.company.model.utils.Cdh;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class StatisticsUtils implements CSVPrintable {
@@ -52,16 +49,6 @@ public class StatisticsUtils implements CSVPrintable {
 
     /**
      * -------------------------------------------------------------------------------------------------------------
-     * ---------------------------------------- CSV WRITABLE ---------------------------------------------------
-     * -------------------------------------------------------------------------------------------------------------
-     */
-    @Override
-    public void writeToCSV(PrintWriter printer) {
-
-    }
-
-    /**
-     * -------------------------------------------------------------------------------------------------------------
      * ---------------------------------------- PRINT STATISTICS ---------------------------------------------------
      * -------------------------------------------------------------------------------------------------------------
      */
@@ -86,11 +73,11 @@ public class StatisticsUtils implements CSVPrintable {
             }
         }
 
-        /* -------------------------------------- Batch Means and CDH ----------------------------------------------- */
+        /* -------------------------------------- Batch Means ----------------------------------------------- */
         if (Configuration.EXEC_BATCH_MEANS) {
 
             /* Write csv header */
-            /*this.writeToCSV(Configuration.THRESHOLD_STATISTICS_FILE_PATH, new String[]{
+            this.writeToCSV(Configuration.THRESHOLD_STATISTICS_FILE_PATH, new String[]{
                     "S",
                     "MRT", "±", "min", "max",
                     "MRT Class 1", "±", "min", "max",
@@ -109,63 +96,12 @@ public class StatisticsUtils implements CSVPrintable {
                     "MP Cloud Class 2", "±", "min", "max",
                     "% Interrupted", "±", "min", "max",
                     "MRT Interrupted", "±", "min", "max"
-            });*/
+            });
 
             List<String> batchValues = new ArrayList<>();
             batchValues.add(String.valueOf(Configuration.S));
 
             DecimalFormat decimalFourZero = new DecimalFormat("###0.000000");
-
-            if (Configuration.EXECUTE_CDH) {
-                /* CDH */
-                /* ------------------------------------------- (A.3.1) ----------------------------------------------------- */
-                Cdh batchSystemRespTimeCdh = new Cdh(batchStatistics.getSystemRespTime());
-                Cdh batchClass1RespTimeCdh = new Cdh(batchStatistics.getClass1RespTime());
-                Cdh batchClass2RespTimeCdh = new Cdh(batchStatistics.getClass2RespTime());
-                Cdh batchGlobalThrCdh = new Cdh(batchStatistics.getGlobalThr());
-                Cdh batchClass1ThrCdh = new Cdh(batchStatistics.getClass1Thr());
-                Cdh batchClass2ThrCdh = new Cdh(batchStatistics.getClass2Thr());
-
-                /* ------------------------------------------- (A.3.2) ----------------------------------------------------- */
-                Cdh batchCletEffClass1ThrCdh = new Cdh(batchStatistics.getCloudletEffectiveClass1Thr());
-                Cdh batchCletEffClass2ThrCdh = new Cdh(batchStatistics.getCloudletEffectiveClass2Thr());
-
-                /* ------------------------------------------- (A.3.3) ----------------------------------------------------- */
-                Cdh batchCloudClass1ThrCdh = new Cdh(batchStatistics.getCloudClass1Thr());
-                Cdh batchCloudClass2ThrCdh = new Cdh(batchStatistics.getCloudClass2Thr());
-
-                /* ------------------------------------------- (A.3.4) ----------------------------------------------------- */
-                Cdh batchCletClass1RespTimeCdh = new Cdh(batchStatistics.getClass1CletRespTime());
-                Cdh batchCletClass2RespTimeCdh = new Cdh(batchStatistics.getClass2CletRespTime());
-                Cdh batchCloudClass1RespTimeCdh = new Cdh(batchStatistics.getClass1CloudRespTime());
-                Cdh batchCloudClass2RespTimeCdh = new Cdh(batchStatistics.getClass2CloudRespTime());
-                Cdh batchCloudletClass1MeanPopCdh = new Cdh(batchStatistics.getClass1CletMeanPop());
-                Cdh batchCloudletClass2MeanPopCdh = new Cdh(batchStatistics.getClass2CletMeanPop());
-                Cdh batchCloudClass1MeanPopCdh = new Cdh(batchStatistics.getClass1CloudMeanPop());
-                Cdh batchCloudClass2MeanPopCdh = new Cdh(batchStatistics.getClass2CloudMeanPop());
-
-                batchSystemRespTimeCdh.writeToCSVFile("./outputs/batchSystemRespTimeCdh.csv");
-                batchClass1RespTimeCdh.writeToCSVFile("./outputs/batchClass1RespTimeCdh.csv");
-                batchClass2RespTimeCdh.writeToCSVFile("./outputs/batchClass2RespTimeCdh.csv");
-                batchGlobalThrCdh.writeToCSVFile("./outputs/batchGlobalThrCdh.csv");
-                batchClass1ThrCdh.writeToCSVFile("./outputs/batchClass1ThrCdh.csv");
-                batchClass2ThrCdh.writeToCSVFile("./outputs/batchClass2ThrCdh.csv");
-
-                batchCletEffClass1ThrCdh.writeToCSVFile("./outputs/batchCletEffClass1ThrCdh.csv");
-                batchCletEffClass2ThrCdh.writeToCSVFile("./outputs/batchCletEffClass2ThrCdh.csv");
-
-                batchCloudClass1ThrCdh.writeToCSVFile("./outputs/batchCloudClass1ThrCdh.csv");
-                batchCloudClass2ThrCdh.writeToCSVFile("./outputs/batchCloudClass2ThrCdh.csv");
-
-                batchCletClass1RespTimeCdh.writeToCSVFile("./outputs/batchCletClass1RespTimeCdh.csv");
-                batchCletClass2RespTimeCdh.writeToCSVFile("./outputs/batchCletClass2RespTimeCdh.csv");
-                batchCloudClass1RespTimeCdh.writeToCSVFile("./outputs/batchCloudClass1RespTimeCdh.csv");
-                batchCloudClass2RespTimeCdh.writeToCSVFile("./outputs/batchCloudClass2RespTimeCdh.csv");
-                batchCloudletClass1MeanPopCdh.writeToCSVFile("./outputs/batchCloudletClass1MeanPopCdh.csv");
-                batchCloudletClass2MeanPopCdh.writeToCSVFile("./outputs/batchCloudletClass2MeanPopCdh.csv");
-                batchCloudClass1MeanPopCdh.writeToCSVFile("./outputs/batchCloudClass1MeanPopCdh.csv");
-                batchCloudClass2MeanPopCdh.writeToCSVFile("./outputs/batchCloudClass2MeanPopCdh.csv");
-            }
 
             /* --------------------------------------- (A.3.1 / C.3.1) ------------------------------------------------- */
             double[] batchSystemRespTime = this.computeMeanAndConfidenceWidth(batchStatistics.getSystemRespTime());
