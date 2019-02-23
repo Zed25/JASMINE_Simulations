@@ -87,8 +87,11 @@ public class Simulator {
         this.controller.computeNextArrival(this.arrival, this.STOP, this.controller.getCloudletEvents()); /* compute first arrival */
 
         while (((this.controller.getCloudletEvents()[0].getEventStatus() == EventStatus.ACTIVE) || !systemState.systemIsEmpty()) /*&&
-                eventCounter < 100*/) {
-            /*if (eventCounter == 301) {
+                eventCounter < 700*/) {
+            if (Configuration.LIMIT_BATCH && batchStatistics.getBatchMeanStatistics().size() == Configuration.MAX_BATCH_NUMBER) {
+                break;
+            }
+            /*if (eventCounter == 600) {
                 batchStatistics = new BatchStatistics();
             }*/
             nextEventInfo = this.simulatorUtils.nextEvent(                                     /* compute next event index */

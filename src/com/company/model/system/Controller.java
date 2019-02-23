@@ -331,6 +331,16 @@ public class Controller {
 
         /* update system state */
         systemState.decrementN2Clet();
+        if (Configuration.CLOUDLET_HYPEREXP_SERVICE) {
+            switch (cloudletEvents[serverIndex].getHyperexpPhase()){
+                case PHASE_1:
+                    ((HyperexpSystemState) systemState).decrementN2F1();
+                    break;
+                case PHASE_2:
+                    ((HyperexpSystemState) systemState).decrementN2F2();
+                    break;
+            }
+        }
 
         /*update statistics connected */
         batchStatistics.incrementInterruptedN2JobsServiceTimeOnClet(
