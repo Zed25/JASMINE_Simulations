@@ -12,8 +12,8 @@ public class Configuration {
 
     public static final boolean EXEC_STATIONARY_STATISTICS = false;
     public static final boolean EXEC_BATCH_MEANS = true;
-    public static final Algorithms EXECUTION_ALGORITHM = Algorithms.ALGORITHM_2;     /* controller algorithm */
-    public static final boolean EXECUTE_CDH = false;
+    public static final Algorithms EXECUTION_ALGORITHM = Algorithms.ALGORITHM_1;     /* controller algorithm */
+    public static final boolean EXECUTE_CDH = true;
 
     public static final boolean PRINT_OTHER_STATISTICS = false;
 
@@ -36,7 +36,7 @@ public class Configuration {
     public static final double HYPEREXP_PROB = 0.2;             /* Hyperexponential probability */
 
 
-    public static final long BATCH_SIZE = 100000;
+    public static final long BATCH_SIZE = 20000;
 
     /* OUTPUT PATHS */
     public static final String STATIONARY_STATISTICS_CSV_PATH = "./outputs/stationary_check_" + SEED + ".csv";

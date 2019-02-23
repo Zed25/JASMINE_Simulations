@@ -19,14 +19,15 @@ public class Cdh implements CSVPrintable {
     private double[] midpoints; /* bin midpoints */
     private double[] proportions; /* bin proportions */
     private double[] densities; /* bin densities */
+    private double[] cumulatives; /* bin cumulatives */
 
     public Cdh(List<Double> values) {
         int n = values.size();
         //int k = (int)((Math.floor(Math.log(n) / Math.log(2)) + Math.floor(Math.sqrt(n))) / 2); //log2(n) < k < sqrt(n)
-        //int k = (int)Math.ceil(Math.sqrt(n)); //Square-root choice
+        int k = (int)Math.ceil(Math.sqrt(n)); //Square-root choice
         //int k = (int)(Math.ceil(Math.log(n) / Math.log(2)) + 1); //Sturges' formula
         //int k = (int)(Math.floor(2 * Math.pow(n, 1./3))); //Rice Rule
-        int k = (int) (Math.floor(5. / 3 * Math.pow(n, 1. / 3))); //Rice Rule 2
+        //int k = (int) (Math.floor(5. / 3 * Math.pow(n, 1. / 3))); //Rice Rule 2
 
         double max = Collections.max(values);
         double min = Collections.min(values);
@@ -40,10 +41,12 @@ public class Cdh implements CSVPrintable {
         this.midpoints = new double[k];
         this.proportions = new double[k];
         this.densities = new double[k];
+        this.cumulatives = new double[k];
         long size = values.size();
 
         for (int j = 0; j < k; j++) {
             this.counts[j] = 0;
+            this.cumulatives[j] = 0;
             this.midpoints[j] = min + (j + 0.5) * delta;
         }
 
@@ -60,6 +63,7 @@ public class Cdh implements CSVPrintable {
         for (int j = 0; j < k; j++) {
             proportions[j] = (double) counts[j] / size;
             densities[j] = counts[j] / (size * delta);
+            cumulatives[j] = proportions[j] + (j > 0 ? cumulatives[j-1] : 0);
         }
 
         double sum = 0.0;
@@ -131,14 +135,16 @@ public class Cdh implements CSVPrintable {
                 "counts",
                 "midpoints",
                 "proportions",
-                "densities"
+                "densities",
+                "cumulatives"
         }));
         for (int i = 0; i < this.k; i++) {
             printer.println(String.join(",", new String[]{
                     f.format(this.counts[i]),
                     f.format(this.midpoints[i]),
                     f.format(this.proportions[i]),
-                    f.format(this.densities[i])
+                    f.format(this.densities[i]),
+                    f.format(this.cumulatives[i])
             }));
         }
     }

@@ -39,7 +39,7 @@ import java.io.InputStreamReader;
 import java.util.Date;
 
 
-class Rngs {
+public class Rngs {
 
     static long CHECK = 399268537L; /* DON'T CHANGE THIS VALUE                  */
     long MODULUS = 2147483647; /* DON'T CHANGE THIS VALUE                  */
