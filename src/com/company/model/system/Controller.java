@@ -332,7 +332,7 @@ public class Controller {
         /* update system state */
         systemState.decrementN2Clet();
         if (Configuration.CLOUDLET_HYPEREXP_SERVICE) {
-            switch (cloudletEvents[serverIndex].getHyperexpPhase()){
+            switch (cloudletEvents[serverIndex].getHyperexpPhase()) {
                 case PHASE_1:
                     ((HyperexpSystemState) systemState).decrementN2F1();
                     break;

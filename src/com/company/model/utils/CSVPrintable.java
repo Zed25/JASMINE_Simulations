@@ -10,9 +10,10 @@ import java.util.Arrays;
  * ---------------------------------------------------------------------------------------------------------------------
  * --------------------------------------- CSV Printable Interface -----------------------------------------------------
  * ---------------------------------------------------------------------------------------------------------------------
- * */
+ */
 public interface CSVPrintable {
-    default void writeToCSV(PrintWriter printer){}
+    default void writeToCSV(PrintWriter printer) {
+    }
 
     default void writeToCSV(String path, String[] values) {
         try {

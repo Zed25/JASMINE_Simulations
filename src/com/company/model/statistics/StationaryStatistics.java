@@ -165,11 +165,11 @@ public class StationaryStatistics implements AggregateStatistics, CSVPrintable {
             );
             this.cloudletClass1EffectiveThr.add(new TimeValueStatistics(currentTime, baseStatistics.getProcessedN1JobsClet() / currentTime));
             this.cloudletClass2EffectiveThr.add(new TimeValueStatistics(currentTime, baseStatistics.getProcessedN2JobsClet() / currentTime));
-            this.cloudClass1Thr.add(new TimeValueStatistics(currentTime,baseStatistics.getProcessedN1JobsCloud() / currentTime));
+            this.cloudClass1Thr.add(new TimeValueStatistics(currentTime, baseStatistics.getProcessedN1JobsCloud() / currentTime));
             this.cloudClass2Thr.add(new TimeValueStatistics(currentTime, baseStatistics.getProcessedN2JobsCloud() / currentTime));
             this.cloudletClass1MeanPop.add(new TimeValueStatistics(currentTime, baseStatistics.getN1CletArea() / currentTime));
             this.cloudletClass2MeanPop.add(new TimeValueStatistics(currentTime, baseStatistics.getN2CletArea() / currentTime));
-            this.cloudClass1MeanPop.add(new TimeValueStatistics(currentTime,  baseStatistics.getN1CloudArea() / currentTime));
+            this.cloudClass1MeanPop.add(new TimeValueStatistics(currentTime, baseStatistics.getN1CloudArea() / currentTime));
             this.cloudClass2MeanPop.add(new TimeValueStatistics(currentTime, baseStatistics.getN2CloudArea() / currentTime));
         }
     }
@@ -179,7 +179,7 @@ public class StationaryStatistics implements AggregateStatistics, CSVPrintable {
         DecimalFormat f = new DecimalFormat("###0.0000000000000");
         int systemSize = systemResponseTime.size();
 
-        String[] header = new String[] {
+        String[] header = new String[]{
                 "Time",
                 "MRT",
                 "AVG",

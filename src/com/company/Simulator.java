@@ -19,24 +19,19 @@ public class Simulator {
     private final double START = 0.0;                                   /* initial (open the door) */
     private final double STOP = Configuration.STOP;                     /* terminal (close the door) time */
     private final double INFINITY = 100 * STOP;                         /* infinity, much bigger than STOP */
-
-    private double arrival[] = {START, START};                          /* init arrival time for CLASS1 <- arrival[0]
-                                                                           and CLASS2 <- arrival[1]*/
-
     /* UTILITIES */
     StatisticsUtils statisticsUtils = new StatisticsUtils();
     SimulatorUtils simulatorUtils = new SimulatorUtils();
-
-    /* TIME */
-    private Time t;
-
-    /* SYSTEM */
-    private Controller controller;
-
     /* BATCH MEANS */
     long eventCounter = 1;                    /* event processed in batch counter,
                                                if eventCounter mod(batchSize - 1) == 0 -> reset batch statistics */
     long batchSize = Configuration.BATCH_SIZE;                  /* number of event processed in a batch */
+    private double arrival[] = {START, START};                          /* init arrival time for CLASS1 <- arrival[0]
+                                                                           and CLASS2 <- arrival[1]*/
+    /* TIME */
+    private Time t;
+    /* SYSTEM */
+    private Controller controller;
 
     /**
      * ----------------------------------------------------------------------------------------------------------------

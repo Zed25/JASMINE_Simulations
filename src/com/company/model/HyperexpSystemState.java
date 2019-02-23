@@ -3,7 +3,7 @@ package com.company.model;
 import com.company.model.event.enumeration.ClassType;
 import com.company.model.event.enumeration.HyperexpPhaseType;
 
-public class HyperexpSystemState extends SystemState{
+public class HyperexpSystemState extends SystemState {
     private long N1F1;                  /* CLASS 1 PHASE 1 jobs' number in cloudlet */
     private long N1F2;                  /* CLASS 1 PHASE 2 jobs' number in cloudlet */
     private long N2F1;                  /* CLASS 2 PHASE 1 jobs' number in cloudlet */
