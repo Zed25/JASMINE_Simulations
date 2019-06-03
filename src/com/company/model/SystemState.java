@@ -8,6 +8,10 @@ public class SystemState {
 
     /* First markov state (0,0,0,0) */
     public SystemState() {
+        this.reset();
+    }
+
+    public void reset() {
         this.n1Clet = 0;
         this.n2Clet = 0;
         this.n1Cloud = 0;

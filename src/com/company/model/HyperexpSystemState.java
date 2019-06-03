@@ -12,6 +12,11 @@ public class HyperexpSystemState extends SystemState {
     /* init first hyperexp service markov state (0,0,0,0) */
     public HyperexpSystemState() {
         super();
+        this.reset();
+    }
+
+    public void reset(){
+        super.reset();
         this.N1F1 = 0;
         this.N1F2 = 0;
         this.N2F1 = 0;

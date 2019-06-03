@@ -55,7 +55,26 @@ public class Controller {
     }
 
     public void plantSeeds(long seed) {
-        rngs.plantSeeds(seed);          /* plan seeds */
+        rvgs.rngs.plantSeeds(seed);          /* plan seeds */
+    }
+
+    public long getSeed() {
+        rvgs.rngs.selectStream(0); /* select initial stream */
+        return rvgs.rngs.getSeed();
+    }
+
+    public void reset() {
+        this.cloudletEvents = new CloudletEvent[N + 1];
+        for (int s = 0; s < N + 1; s++)
+            cloudletEvents[s] = new CloudletEvent();
+
+        this.cloudEvents = new ArrayList<>();
+    }
+
+    public void softReset() {
+        for (int s = 1; s < N + 1; s++)
+            cloudletEvents[s] = new CloudletEvent();
+        this.cloudEvents = new ArrayList<>();
     }
 
     /**
@@ -65,7 +84,7 @@ public class Controller {
      */
 
     public void processEvent(NextEventInfo nextEventInfo, SystemState systemState,
-                             Time t, double[] arrival, double stopTime, BatchStatistics batchStatistics, StationaryStatistics stationaryStatistics) {
+                             Time t, double[] arrival, double stopTime, BatchStatistics batchStatistics) {
         if (nextEventInfo.getIndex() == 0 &&
                 nextEventInfo.getLocation() == EventLocation.CLOUDLET) {  /* process cloudlet arrival*/
 
@@ -76,7 +95,7 @@ public class Controller {
             } else if (Configuration.EXECUTION_ALGORITHM == Configuration.Algorithms.ALGORITHM_2) {
                 /* exec algorithm 2 */
                 this.execAlgorithm2(cloudletEvents, cloudEvents, systemState, t, arrival,
-                        batchStatistics.getLastBatchStatistics(), stationaryStatistics.getBaseStatistics());
+                        batchStatistics.getLastBatchStatistics());
 
             }
             this.computeNextArrival(arrival, stopTime, cloudletEvents); /* compute next arrival */
@@ -85,11 +104,11 @@ public class Controller {
                 && nextEventInfo.getLocation() == EventLocation.CLOUDLET) { /* process cloudlet departure */
 
             this.processCloudletDeparture(nextEventInfo.getIndex(), cloudletEvents, systemState,
-                    batchStatistics.getLastBatchStatistics(), stationaryStatistics.getBaseStatistics());
+                    batchStatistics.getLastBatchStatistics());
         } else { /* process cloud departure */
 
             this.processCloudDeparture(nextEventInfo.getIndex(), cloudEvents, systemState, t,
-                    batchStatistics.getLastBatchStatistics(), stationaryStatistics.getBaseStatistics());
+                    batchStatistics.getLastBatchStatistics());
 
         }
     }
@@ -137,8 +156,7 @@ public class Controller {
     private void execAlgorithm2(CloudletEvent[] cloudletEvents,
                                 List<CloudEvent> cloudEvents, SystemState systemState,
                                 Time time, double[] arrival,
-                                BaseStatistics batchStatistics,
-                                BaseStatistics stationaryStatistics) {
+                                BaseStatistics batchStatistics) {
         switch (cloudletEvents[0].getClassType()) {
             case CLASS1:                                                                        /* CLASS 1 JOB */
                 if (systemState.getN1Clet() == N) {                                                     /* check n1 == N */
@@ -149,7 +167,7 @@ public class Controller {
                                                                                                         /* send one class 2 job to
                                                                                                         cloud and accept class 1 job*/
                     this.interruptClass2JobAndAcceptOnCloudlet(cloudletEvents, cloudEvents, systemState,
-                            time, arrival, batchStatistics, stationaryStatistics);
+                            time, arrival, batchStatistics);
                 } else {
                     this.acceptJobToCloudlet(cloudletEvents, systemState, time, arrival);               /* otherwise accept job on cloudlet */
                 }
@@ -169,9 +187,9 @@ public class Controller {
 
     private void interruptClass2JobAndAcceptOnCloudlet(CloudletEvent[] cloudletEvents, List<CloudEvent> cloudEvents,
                                                        SystemState systemState, Time time, double[] arrival,
-                                                       BaseStatistics batchStatistics, BaseStatistics stationaryStatistics) {
+                                                       BaseStatistics batchStatistics) {
         /* interrupt class 2 job on cloudlet */
-        this.interruptClass2JobOnCloudlet(cloudletEvents, systemState, time, batchStatistics, stationaryStatistics);
+        this.interruptClass2JobOnCloudlet(cloudletEvents, systemState, time, batchStatistics);
         /* send job to cloud */
         this.acceptInterruptedJobOnCloud(cloudEvents, systemState, time.getCurrent());
         /* accept class 1 job on cloudlet, according to utilization balance policy, so choose longest idle server */
@@ -249,16 +267,14 @@ public class Controller {
      * ---------------------------
      */
     private void processCloudletDeparture(int eventIndex, CloudletEvent[] cloudletEvents, SystemState systemState,
-                                          BaseStatistics baseStatistics, BaseStatistics stationaryStatistics) {
+                                          BaseStatistics baseStatistics) {
         CloudletEvent event = cloudletEvents[eventIndex];       /* get event to process */
         if (event.getClassType() == ClassType.CLASS1) {         /* process class 1 departure */
             systemState.decrementN1Clet();                      /* decrement class 1 state */
             baseStatistics.incrementProcJobsN1Clet();
-            stationaryStatistics.incrementProcJobsN1Clet();
         } else if (event.getClassType() == ClassType.CLASS2) {  /* process class 2 departure */
             systemState.decrementN2Clet();                      /* decrement class 2 state */
             baseStatistics.incrementProcJobsN2Clet();
-            stationaryStatistics.incrementProcJobsN2Clet();
         }
 
         /* update hyperexp state */
@@ -268,7 +284,6 @@ public class Controller {
 
         /* update statistics */
         baseStatistics.incrementProcessedJobPerPhase(event.getClassType(), event.getHyperexpPhase());
-        stationaryStatistics.incrementProcessedJobPerPhase(event.getClassType(), event.getHyperexpPhase());
 
         /* set server idle */
         cloudletEvents[eventIndex].setClassType(ClassType.NONE);
@@ -306,7 +321,7 @@ public class Controller {
      * --------------------
      */
     private void interruptClass2JobOnCloudlet(CloudletEvent[] cloudletEvents, SystemState systemState, Time t,
-                                              BaseStatistics batchStatistics, BaseStatistics stationaryStatistics) {
+                                              BaseStatistics batchStatistics) {
         int serverIndex = 0;                                                    /* chosen server index */
         double maxArrivalTime = -1;                                             /* min arrival time */
         for (int i = 0; i < cloudletEvents.length; i++) {
@@ -347,10 +362,6 @@ public class Controller {
                 t.getCurrent() - cloudletEvents[serverIndex].getArrivalTime()
         );
         batchStatistics.incrementInterruptedN2Jobs();
-        stationaryStatistics.incrementInterruptedN2JobsServiceTimeOnClet(
-                t.getCurrent() - cloudletEvents[serverIndex].getArrivalTime()
-        );
-        stationaryStatistics.incrementInterruptedN2Jobs();
     }
 
     /** ----------------------------------------------------------------------------------------------------------------
@@ -435,25 +446,20 @@ public class Controller {
      * process cloud departure
      * ------------------------
      */
-    private void processCloudDeparture(int eventIndex, List<CloudEvent> cloudEvents, SystemState systemState, Time t, BaseStatistics batchStatistics, BaseStatistics stationaryStatistics) {
+    private void processCloudDeparture(int eventIndex, List<CloudEvent> cloudEvents, SystemState systemState, Time t, BaseStatistics batchStatistics) {
         if (cloudEvents.get(eventIndex).getClassType() == ClassType.CLASS1) {           /* process cloud
                                                                                            class1 departure */
             systemState.decrementN1Cloud();                                             /* decrement cloud
                                                                                            class1 state */
             batchStatistics.incrementProcJobsN1Cloud();
-            stationaryStatistics.incrementProcJobsN1Cloud();
         } else if (cloudEvents.get(eventIndex).getClassType() == ClassType.CLASS2) {    /* process cloud
                                                                                            class2 departure */
             systemState.decrementN2Cloud();                                             /* decrement cloud
                                                                                            class2 state */
             batchStatistics.incrementProcJobsN2Cloud();
-            stationaryStatistics.incrementProcJobsN2Cloud();
 
             if (cloudEvents.get(eventIndex).isInterruptedJob()) {
                 batchStatistics.incrementInterruptedN2JobsServiceTimeOnCloud(
-                        t.getCurrent() - cloudEvents.get(eventIndex).getArrivalTime()
-                );
-                stationaryStatistics.incrementInterruptedN2JobsServiceTimeOnCloud(
                         t.getCurrent() - cloudEvents.get(eventIndex).getArrivalTime()
                 );
             }
