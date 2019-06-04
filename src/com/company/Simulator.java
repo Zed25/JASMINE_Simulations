@@ -9,7 +9,6 @@ import com.company.model.event.enumeration.ClassType;
 import com.company.model.event.enumeration.EventLocation;
 import com.company.model.event.enumeration.EventStatus;
 import com.company.model.statistics.BatchStatistics;
-import com.company.model.statistics.StationaryStatistics;
 import com.company.model.statistics.utils.StatisticsUtils;
 import com.company.model.system.Controller;
 import com.company.model.utils.SimulatorUtils;
@@ -35,8 +34,9 @@ public class Simulator {
     private Controller controller;
 
     /* SIMULATION TIMES */
-    private int simulationRepeatTimes = Configuration.SIMULATION_REPEAT_TIMES;
-    private int batchRepeatTimes = Configuration.BATCH_REPEAT_TIMES;
+    private int simulationRepeatTimes;
+    private int batchRepeatTimes;
+    private long observations; /* number of simulation observations */
 
     private NextEventInfo nextEventInfo;            /* next event info :
                                                        nextEventInfo[0] <- list or array index,
@@ -54,7 +54,26 @@ public class Simulator {
      */
     public static void main(String[] args) {
         Simulator simulator = new Simulator();
+        simulator.init();
         simulator.simulate();
+    }
+
+
+    /**
+     * ----------------------------------------------------------------------------------------------------------------
+     * --------------------------------------------------   INIT   ----------------------------------------------------
+     * ----------------------------------------------------------------------------------------------------------------
+     */
+    private void init() {
+        // init simulation repeat time parameters
+        this.simulationRepeatTimes = Configuration.SIMULATION_REPEAT_TIMES;
+        if (Configuration.FINITE_HORIZON) {
+            this.batchRepeatTimes = Configuration.BATCH_REPEAT_TIMES;
+            this.observations = Configuration.OBSERVATIONS;
+        } else {
+            this.batchRepeatTimes = 1;
+            this.observations = 1;
+        }
     }
 
     /**
@@ -88,9 +107,9 @@ public class Simulator {
 
                 this.controller.plantSeeds(this.seed); /* reinit random numbers generator*/
 
-                for (int k = 0; k < 1; k++) {
+                for (int k = 0; k < this.observations; k++) {
 
-                    this.init();
+                    this.initSimulation();
 
                     while (((this.controller.getCloudletEvents()[0].getEventStatus() == EventStatus.ACTIVE)
                             || !systemState.systemIsEmpty())) {
@@ -99,14 +118,10 @@ public class Simulator {
                         /* --- compute statistics --- */
                         if (eventCounter % (batchSize - 1) == 0) {    /* start new batch mean*/
                             if (Configuration.FINITE_HORIZON) {
-                                if (k < 19) {
+                                if (k < (this.observations - 1)) {
                                     batchStatistics.resetBatch();
                                 }
-                                /*if (this.controller.getCloudletEvents()[0].getEventStatus() == EventStatus.ACTIVE) {
-                                    this.softReset();
-                                } else {*/
-                                    break;
-                                //}
+                                break;
                             } else {
                                 batchStatistics.resetBatch();
                             }
@@ -138,11 +153,6 @@ public class Simulator {
             this.seed = this.controller.getSeed(); /* update simulation seed */
         }
 
-    }
-
-    private void softReset() {
-        this.controller.softReset();
-        this.systemState.reset();
     }
 
     private void computeNext() {
@@ -182,7 +192,7 @@ public class Simulator {
         this.batchStatistics = new BatchStatistics(); /* init batch statistics */
     }
 
-    private void init() {
+    private void initSimulation() {
         this.arrival[0] += this.controller.getArrival(ClassType.CLASS1); /* get first CLASS1 arrival */
         this.arrival[1] += this.controller.getArrival(ClassType.CLASS2); /* get first CLASS2 arrival */
 

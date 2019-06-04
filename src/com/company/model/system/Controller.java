@@ -12,7 +12,6 @@ import com.company.model.event.enumeration.EventLocation;
 import com.company.model.event.enumeration.EventStatus;
 import com.company.model.statistics.BaseStatistics;
 import com.company.model.statistics.BatchStatistics;
-import com.company.model.statistics.StationaryStatistics;
 
 import java.util.ArrayList;
 import java.util.List;

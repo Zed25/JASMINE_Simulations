@@ -3,12 +3,9 @@ package com.company.model.statistics.utils;
 import com.company.Rvms;
 import com.company.configuration.Configuration;
 import com.company.model.statistics.BatchStatistics;
-import com.company.model.statistics.StationaryStatistics;
 import com.company.model.utils.CSVPrintable;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -156,6 +153,21 @@ public class StatisticsUtils implements CSVPrintable {
         batchValues.add(decimalFourZero.format(batchClass2RespTime[1]));
         batchValues.add(decimalFourZero.format(batchClass2RespTime[0] - batchClass2RespTime[1]));
         batchValues.add(decimalFourZero.format(batchClass2RespTime[0] + batchClass2RespTime[1]));
+        /* print to csv */
+        batchValues.add(decimalFourZero.format(batchGlobalThr[0]));
+        batchValues.add(decimalFourZero.format(batchGlobalThr[1]));
+        batchValues.add(decimalFourZero.format(batchGlobalThr[0] - batchGlobalThr[1]));
+        batchValues.add(decimalFourZero.format(batchGlobalThr[0] + batchGlobalThr[1]));
+        /* print to csv */
+        batchValues.add(decimalFourZero.format(batchClass1Thr[0]));
+        batchValues.add(decimalFourZero.format(batchClass1Thr[1]));
+        batchValues.add(decimalFourZero.format(batchClass1Thr[0] - batchClass1Thr[1]));
+        batchValues.add(decimalFourZero.format(batchClass1Thr[0] + batchClass1Thr[1]));
+        /* print to csv */
+        batchValues.add(decimalFourZero.format(batchClass2Thr[0]));
+        batchValues.add(decimalFourZero.format(batchClass2Thr[1]));
+        batchValues.add(decimalFourZero.format(batchClass2Thr[0] - batchClass2Thr[1]));
+        batchValues.add(decimalFourZero.format(batchClass2Thr[0] + batchClass2Thr[1]));
 
         if (Configuration.VERBOSE) {
             System.out.println("\n-------------------------------------------------------------");
@@ -336,17 +348,6 @@ public class StatisticsUtils implements CSVPrintable {
             batchValues.add(decimalFourZero.format(batchClass2InterruptedRespTime[1]));
             batchValues.add(decimalFourZero.format(batchClass2InterruptedRespTime[0] - batchClass2InterruptedRespTime[1]));
             batchValues.add(decimalFourZero.format(batchClass2InterruptedRespTime[0] + batchClass2InterruptedRespTime[1]));
-        } else {
-            /* print to csv */
-            batchValues.add("");
-            batchValues.add("");
-            batchValues.add("");
-            batchValues.add("");
-            /* print to csv */
-            batchValues.add("");
-            batchValues.add("");
-            batchValues.add("");
-            batchValues.add("");
         }
 
         /* ------------------------------------------- Hyperexp phases ----------------------------------------------------- */
@@ -405,6 +406,47 @@ public class StatisticsUtils implements CSVPrintable {
                         + decimalFourZero.format(batchN2F2MeanPop[0] - batchN2F2MeanPop[1]) + " , "
                         + decimalFourZero.format(batchN2F2MeanPop[0] + batchN2F2MeanPop[1]) + "]\n");
             }
+
+            /* print to csv */
+            batchValues.add(decimalFourZero.format(batchN1F1RespTime[0]));
+            batchValues.add(decimalFourZero.format(batchN1F1RespTime[1]));
+            batchValues.add(decimalFourZero.format(batchN1F1RespTime[0] - batchN1F1RespTime[1]));
+            batchValues.add(decimalFourZero.format(batchN1F1RespTime[0] + batchN1F1RespTime[1]));
+            /* print to csv */
+            batchValues.add(decimalFourZero.format(batchN1F2RespTime[0]));
+            batchValues.add(decimalFourZero.format(batchN1F2RespTime[1]));
+            batchValues.add(decimalFourZero.format(batchN1F2RespTime[0] - batchN1F2RespTime[1]));
+            batchValues.add(decimalFourZero.format(batchN1F2RespTime[0] + batchN1F2RespTime[1]));
+            /* print to csv */
+            batchValues.add(decimalFourZero.format(batchN2F1RespTime[0]));
+            batchValues.add(decimalFourZero.format(batchN2F1RespTime[1]));
+            batchValues.add(decimalFourZero.format(batchN2F1RespTime[0] - batchN2F1RespTime[1]));
+            batchValues.add(decimalFourZero.format(batchN2F1RespTime[0] + batchN2F1RespTime[1]));
+            /* print to csv */
+            batchValues.add(decimalFourZero.format(batchN2F2RespTime[0]));
+            batchValues.add(decimalFourZero.format(batchN2F2RespTime[1]));
+            batchValues.add(decimalFourZero.format(batchN2F2RespTime[0] - batchN2F2RespTime[1]));
+            batchValues.add(decimalFourZero.format(batchN2F2RespTime[0] + batchN2F2RespTime[1]));
+            /* print to csv */
+            batchValues.add(decimalFourZero.format(batchN1F1MeanPop[0]));
+            batchValues.add(decimalFourZero.format(batchN1F1MeanPop[1]));
+            batchValues.add(decimalFourZero.format(batchN1F1MeanPop[0] - batchN1F1MeanPop[1]));
+            batchValues.add(decimalFourZero.format(batchN1F1MeanPop[0] + batchN1F1MeanPop[1]));
+            /* print to csv */
+            batchValues.add(decimalFourZero.format(batchN1F2MeanPop[0]));
+            batchValues.add(decimalFourZero.format(batchN1F2MeanPop[1]));
+            batchValues.add(decimalFourZero.format(batchN1F2MeanPop[0] - batchN1F2MeanPop[1]));
+            batchValues.add(decimalFourZero.format(batchN1F2MeanPop[0] + batchN1F2MeanPop[1]));
+            /* print to csv */
+            batchValues.add(decimalFourZero.format(batchN2F1MeanPop[0]));
+            batchValues.add(decimalFourZero.format(batchN2F1MeanPop[1]));
+            batchValues.add(decimalFourZero.format(batchN2F1MeanPop[0] - batchN2F1MeanPop[1]));
+            batchValues.add(decimalFourZero.format(batchN2F1MeanPop[0] + batchN2F1MeanPop[1]));
+            /* print to csv */
+            batchValues.add(decimalFourZero.format(batchN2F2MeanPop[0]));
+            batchValues.add(decimalFourZero.format(batchN2F2MeanPop[1]));
+            batchValues.add(decimalFourZero.format(batchN2F2MeanPop[0] - batchN2F2MeanPop[1]));
+            batchValues.add(decimalFourZero.format(batchN2F2MeanPop[0] + batchN2F2MeanPop[1]));
         }
 
         /* write results to CSV */
@@ -420,6 +462,9 @@ public class StatisticsUtils implements CSVPrintable {
                     "MRT", "±", "min", "max",
                     "MRT Class 1", "±", "min", "max",
                     "MRT Class 2", "±", "min", "max",
+                    "Thr", "±", "min", "max",
+                    "Thr Class 1", "±", "min", "max",
+                    "Thr Class 2", "±", "min", "max",
                     "Thr Cloudlet Class 1", "±", "min", "max",
                     "Thr Cloudlet Class 2", "±", "min", "max",
                     "Thr Cloud Class 1", "±", "min", "max",
@@ -431,13 +476,31 @@ public class StatisticsUtils implements CSVPrintable {
                     "MP Cloudlet Class 1", "±", "min", "max",
                     "MP Cloudlet Class 2", "±", "min", "max",
                     "MP Cloud Class 1", "±", "min", "max",
-                    "MP Cloud Class 2", "±", "min", "max",
-                    "% Interrupted", "±", "min", "max",
-                    "MRT Interrupted", "±", "min", "max"
+                    "MP Cloud Class 2", "±", "min", "max"
             ));
 
             if (Configuration.EXECUTION_ALGORITHM == Configuration.Algorithms.ALGORITHM_2) {
                 headerList.add(0, "S");
+            }
+
+            if (Configuration.EXECUTION_ALGORITHM == Configuration.Algorithms.ALGORITHM_2) {
+                headerList.addAll(Arrays.asList(
+                        "MRT Interrupted", "±", "min", "max",
+                        "% Interrupted", "±", "min", "max"
+                ));
+            }
+
+            if (Configuration.CLOUDLET_HYPEREXP_SERVICE) {
+                headerList.addAll(Arrays.asList(
+                        "MRT N1F1", "±", "min", "max",
+                        "MRT N1F2", "±", "min", "max",
+                        "MRT N2F1", "±", "min", "max",
+                        "MRT N2F2", "±", "min", "max",
+                        "MP N1F1", "±", "min", "max",
+                        "MP N1F2", "±", "min", "max",
+                        "MP N2F1", "±", "min", "max",
+                        "MP N2F2", "±", "min", "max"
+                        ));
             }
 
             String[] header = new String[headerList.size()];
