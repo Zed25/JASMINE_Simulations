@@ -19,8 +19,13 @@ public class StatisticsUtils implements CSVPrintable {
         this.rvms = new Rvms();                 /* init random variate models */
     }
 
+    /**
+     * -------------------------------------------------------------------------------------------------------------
+     * -------------------------- Welford's algorithm mean and standard deviation computation ----------------------
+     * -------------------------------------------------------------------------------------------------------------
+     */
     private double[] computeMeanAndConfidenceWidth(List<Double> batchStatistics) {
-        /* Welford's algorithm mean and standard deviation computation */
+
         int n = 0;                                                              /* n = 0 */
         double mean = 0.0;                                                      /* x = 0.0 */
         double v = 0.0;                                                         /* v = 0.0 */
@@ -30,11 +35,11 @@ public class StatisticsUtils implements CSVPrintable {
             double sample = batchStatistics.get(i);                             /* x = GetData(); */
             n++;                                                                /* n++; */
             double d = sample - mean;                                           /* d = x - mean; */
-            v += d * d * (n - 1) / n;                                             /* v = v + (d * d * (n - 1)/n);*/
-            mean += d / n;                                                        /* mean = mean + d/n;  */
+            v += d * d * (n - 1) / n;                                           /* v = v + (d * d * (n - 1)/n);*/
+            mean += d / n;                                                      /* mean = mean + d/n;  */
             i++;                                                                /* step iterator */
         }
-        double stDev = Math.sqrt(v / n);                                          /* s = sqrt(v/n); */
+        double stDev = Math.sqrt(v / n);                                        /* s = sqrt(v/n); */
 
         if (n > 1) {
             double u = 1.0 - 0.5 * (1.0 - Configuration.LOC);                   /* interval parameter  */
@@ -43,13 +48,13 @@ public class StatisticsUtils implements CSVPrintable {
             return new double[]{mean, w};                                       /* return mean and interval half width */
         }
 
-        return new double[]{0, 0};                                               /* empty batch statistics default values */
+        return new double[]{0, 0};                                              /* empty batch statistics default values */
 
     }
 
     /**
      * -------------------------------------------------------------------------------------------------------------
-     * ---------------------------------------- PRINT STATISTICS ---------------------------------------------------
+     * ------------------------------------------- PRINT STATISTICS ------------------------------------------------
      * -------------------------------------------------------------------------------------------------------------
      */
     public void printStatistics(BatchStatistics batchStatistics, long batchSize, long seed) {

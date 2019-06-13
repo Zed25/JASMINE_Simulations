@@ -19,7 +19,8 @@ public class CloudletEvent extends Event {
     }
 
     /* real event constructor */
-    public CloudletEvent(double nextEventTime, EventStatus eventStatus, ClassType classType, double arrivalTime, HyperexpPhaseType hyperexpPhase) {
+    public CloudletEvent(double nextEventTime, EventStatus eventStatus, ClassType classType,
+                         double arrivalTime, HyperexpPhaseType hyperexpPhase) {
         this.nextEventTime = nextEventTime;
         this.eventStatus = eventStatus;
         this.classType = classType;

@@ -54,7 +54,7 @@ public class Controller {
     }
 
     public void plantSeeds(long seed) {
-        rvgs.rngs.plantSeeds(seed);          /* plan seeds */
+        rvgs.rngs.plantSeeds(seed);          /* plant seeds */
     }
 
     public long getSeed() {
@@ -67,12 +67,6 @@ public class Controller {
         for (int s = 0; s < N + 1; s++)
             cloudletEvents[s] = new CloudletEvent();
 
-        this.cloudEvents = new ArrayList<>();
-    }
-
-    public void softReset() {
-        for (int s = 1; s < N + 1; s++)
-            cloudletEvents[s] = new CloudletEvent();
         this.cloudEvents = new ArrayList<>();
     }
 
@@ -405,9 +399,9 @@ public class Controller {
     }
 
     /**
-     * -------------------
+     * --------------------------------
      * accept interrupted job to cloud
-     * --------------------
+     * --------------------------------
      */
     private void acceptInterruptedJobOnCloud(List<CloudEvent> cloudEvents, SystemState systemState, double currentTime) {
         int s = findCloudIdleServer(cloudEvents);                           /* find the longest idle server on cloud */
@@ -424,7 +418,7 @@ public class Controller {
     }
 
     /**
-     * -----------------------------------------------------------
+     * ------------------------------------------------------------
      * return the index of the available cloud server idle longest
      * ------------------------------------------------------------
      */
@@ -441,7 +435,7 @@ public class Controller {
     }
 
     /**
-     * -----------------------
+     * ------------------------
      * process cloud departure
      * ------------------------
      */
@@ -472,12 +466,12 @@ public class Controller {
     }
 
     /** ----------------------------------------------------------------------------------------------------------------
-     *  ----------------------------------------- ARRIVAL AND SERVICES   -----------------------------------------------
+     *  ----------------------------------------- ARRIVAL AND SERVICES -------------------------------------------------
      *  ----------------------------------------------------------------------------------------------------------------
      *  */
 
     /**
-     * -----------------------------------------------------------------
+     * ------------------------------------------------------------------
      * generate the next arrival value, it must be added to current time
      * ------------------------------------------------------------------
      */
@@ -563,10 +557,10 @@ public class Controller {
     }
 
     /**
-     * --------------------------------------------------------------------------------------------
+     * --------------------------------------------------------------------------------------------------
      * generate cloud interrupted job setup time, it must be added to current time to get departure time.
      * It would be called only for class 2 job.
-     * ---------------------------------------------------------------------------------------------
+     * --------------------------------------------------------------------------------------------------
      */
     private double getInterruptedJobSetupTime() {
         rvgs.rngs.selectStream(9);
